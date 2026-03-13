@@ -12,7 +12,7 @@ class Libp2p::IO v0.2.0 {
     use Errno qw[EAGAIN EWOULDBLOCK EINTR EINPROGRESS];
     #
     field $loop : reader = Libp2p::Loop->get();
-    field @hosts = ();
+    field @hosts;
     #
     method register_host ($h) { push @hosts, $h }
 
