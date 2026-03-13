@@ -1,0 +1,74 @@
+=pod
+
+=encoding utf-8
+
+=head1 NAME
+
+Libp2p::Stream - Duplex communication channel
+
+=head1 SYNOPSIS
+
+    my $stream = Libp2p::Stream->new(
+        stream => $io_async_stream,
+        loop   => $loop
+    );
+
+    $stream->negotiate( '/ipfs/kad/1.0.0' )->then(
+        sub {
+            $stream->write_msg( 'PING' );
+            return $stream->read_msg( );
+        }
+    )->then(
+        sub ($resp) {
+            say 'Got response: ' . $resp;
+        }
+    );
+
+=head1 DESCRIPTION
+
+Libp2p::Stream wraps a raw transport stream (like a TCP socket) and provides high-level methods for message-based and
+binary-based communication.
+
+It also implements the libp2p C</multistream/1.0.0> negotiation protocol.
+
+=head1 METHODS
+
+=head2 C<write_msg( $data )>
+
+Writes a newline-delimited message, prefixed with its length as a varint. Returns a L<Future>.
+
+=head2 C<read_msg( [ $timeout ] )>
+
+Reads a newline-delimited message. Returns a L<Future> that resolves to the message string.
+
+=head2 C<write_bin( $data )>
+
+Writes binary data prefixed with its 16-bit length (network byte order). Returns a L<Future>.
+
+=head2 C<read_bin( [ $timeout ] )>
+
+Reads binary data prefixed with its 16-bit length. Returns a L<Future>.
+
+=head2 C<read_bin_fixed( $len, [ $timeout ] )>
+
+Reads exactly C<$len> bytes. Returns a L<Future>.
+
+=head2 C<negotiate( $protocol )>
+
+Performs multistream negotiation for the specified protocol ID. Returns a L<Future> that resolves to true on success.
+
+=head2 C<close( )>
+
+Closes the underlying stream.
+
+=head1 AUTHOR
+
+Sanko Robinson <sanko@cpan.org>
+
+=head1 COPYRIGHT
+
+Copyright (C) 2026 by Sanko Robinson.
+
+This library is free software; you can redistribute it and/or modify it under the terms of the Artistic License 2.0.
+
+=cut

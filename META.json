@@ -33,6 +33,26 @@
       "Libp2p" : {
          "file" : "lib/Libp2p.pm",
          "version" : "v0.0.1"
+      },
+      "Libp2p::Future" : {
+         "file" : "lib/Libp2p/Future.pm",
+         "version" : "v0.1.0"
+      },
+      "Libp2p::IO" : {
+         "file" : "lib/Libp2p/IO.pm",
+         "version" : "v0.2.0"
+      },
+      "Libp2p::Loop" : {
+         "file" : "lib/Libp2p/Loop.pm",
+         "version" : "v0.1.0"
+      },
+      "Libp2p::Stream" : {
+         "file" : "lib/Libp2p/Stream.pm",
+         "version" : "v0.2.0"
+      },
+      "Libp2p::Utils" : {
+         "file" : "lib/Libp2p/Utils.pm",
+         "version" : "v0.0.1"
       }
    },
    "release_status" : "stable",

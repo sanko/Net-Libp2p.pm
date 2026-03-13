@@ -1,0 +1,82 @@
+=pod
+
+=encoding utf-8
+
+=head1 NAME
+
+Libp2p::Loop - Internal event loop for Libp2p
+
+=head1 SYNOPSIS
+
+    use Libp2p::Loop;
+
+    my $loop = Libp2p::Loop->get( );
+
+    $loop->add_read_handler($socket, sub {
+        my $data = $socket->recv( my $buf, 4096 );
+        say 'Got data: ' . $buf;
+    });
+
+    $loop->timer(1.5, sub { say 'Tick!' });
+
+    $loop->run();
+
+=head1 DESCRIPTION
+
+Libp2p::Loop is the internal event loop implementation for the C<Libp2p> stack. It is designed to be  minimal and
+supports an optional L<Acme::Parataxis> backend for high-performance fiber-based concurrency.
+
+=head1 METHODS
+
+=head2 C<get( )>
+
+Returns the singleton instance of the loop.
+
+=head2 C<add_read_handler( $fh, $cb )>
+
+Registers a callback to be executed when the filehandle is ready for reading.
+
+=head2 C<remove_read_handler( $fh )>
+
+Removes the read callback for the given filehandle.
+
+=head2 C<add_write_handler( $fh, $cb )>
+
+Registers a callback to be executed when the filehandle is ready for writing.
+
+=head2 C<remove_write_handler( $fh )>
+
+Removes the write callback for the given filehandle.
+
+=head2 C<timer( $delay, $cb )>
+
+Schedules a callback to be executed after C<$delay> seconds.
+
+=head2 C<run( )>
+
+Starts the event loop. Continues until C<stop( )> is called or all handlers and timers are cleared.
+
+=head2 C<stop( )>
+
+Signals the loop to stop after the current iteration.
+
+=head2 C<tick( [ $timeout ] )>
+
+Performs a single iteration of the event loop.
+
+=head2 C<await( $future )>
+
+Suspends the current context (fiber if using Parataxis, or blocks otherwise) until the given  L<Libp2p::Future> is
+ready. Returns the future's result.
+
+=head1 AUTHOR
+
+Sanko Robinson <sanko@cpan.org>
+
+=head1 COPYRIGHT
+
+Copyright (C) 2026 by Sanko Robinson.
+
+This library is free software; you can redistribute it and/or modify it under the terms of the Artistic License 2.0.
+
+=cut

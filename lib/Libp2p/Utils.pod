@@ -1,0 +1,44 @@
+=pod
+
+=encoding utf-8
+
+=head1 NAME
+
+Libp2p::Utils - Internal utility functions for libp2p
+
+=head1 SYNOPSIS
+
+    use Libp2p::Utils qw[encode_varint decode_varint];
+
+    my $bin = encode_varint( 1234 );
+    my ($val, $bytes_read) = decode_varint( $bin );
+
+=head1 DESCRIPTION
+
+Libp2p::Utils provides low-level utility functions used by various libp2p components.
+
+=head1 FUNCTIONS
+
+=head2 C<encode_varint( $value )>
+
+Encodes an integer into an unsigned LEB128 varint. Returns the binary string.
+
+=head2 C<decode_varint( $data_or_fh, [ $offset ] )>
+
+Decodes an unsigned LEB128 varint from a binary string (starting at C<$offset>) or a filehandle.
+
+In list context, returns the decoded value and the number of bytes read. In scalar context, returns only the value.
+
+Returns C<undef> if the data is incomplete or invalid.
+
+=head1 AUTHOR
+
+Sanko Robinson <sanko@cpan.org>
+
+=head1 COPYRIGHT
+
+Copyright (C) 2026 by Sanko Robinson.
+
+This library is free software; you can redistribute it and/or modify it under the terms of the Artistic License 2.0.
+
+=cut

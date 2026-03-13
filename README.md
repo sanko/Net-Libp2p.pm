@@ -7,7 +7,7 @@ Libp2p - A Perl implementation of the libp2p networking stack
 ```perl
 use Libp2p::Host;
 
-my $host = Net::Libp2p::Host->new( );
+my $host = Libp2p::Host->new( );
 $host->start( );
 ```
 
@@ -16,7 +16,9 @@ $host->start( );
 Libp2p aims to be a modular peer-to-peer networking stack for Perl, designed to be compatible with the libp2p
 specification.
 
-libp2p, (short for "library peer-to-peer") is a peer-to-peer (P2P) networking framework that enables the development of P2P applications. It consists of a collection of protocols, specifications, and libraries that facilitate P2P communication between network participants.
+libp2p, (short for "library peer-to-peer") is a peer-to-peer (P2P) networking framework that enables the development of
+P2P applications. It consists of a collection of protocols, specifications, and libraries that facilitate P2P
+communication between network participants.
 
 # SEE ALSO
 

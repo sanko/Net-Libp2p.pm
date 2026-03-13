@@ -1,0 +1,73 @@
+=pod
+
+=encoding utf-8
+
+=head1 NAME
+
+Libp2p::IO - Abstraction layer for network I/O operations
+
+=head1 SYNOPSIS
+
+    my $io = Libp2p::IO->new();
+
+    # TCP Listener
+    my ($listener, $port) = $io->listen_tcp(
+        port       => 4001,
+        on_connect => sub ( $stream ) { ... }
+    );
+
+    # TCP Connector
+    my $future = $io->connect_tcp( host => '1.2.3.4', port => 4001 );
+
+    # UDP Listener
+    my $udp_handle = $io->listen_udp(
+        port    => 4001,
+        on_data => sub ( $data, $sender ) { ... }
+    );
+
+=head1 DESCRIPTION
+
+C<Libp2p::IO> provides a unified interface for network operations within the libp2p stack. It is built on top of
+L<IO::Async>.
+
+=head1 METHODS
+
+=head2 C<loop( )>
+
+Returns the global L<IO::Async::Loop> instance used by this object.
+
+=head2 C<listen_tcp( %args )>
+
+Starts a TCP listener. Returns the listener object and the bound port.
+
+=head2 C<connect_tcp( %args )>
+
+Initiates a TCP connection. Returns a L<Future> that resolves to an L<IO::Async::Stream> on success.
+
+=head2 C<listen_udp( %args )>
+
+Starts a UDP listener. Returns a handle that can be used to send and receive data.
+
+=head2 C<send_udp( $sock, $data, $dest )>
+
+Sends data over a UDP socket.
+
+=head2 C<run( )>
+
+Starts the internal event loop.
+
+=head2 C<loop_once( $timeout )>
+
+Runs a single iteration of the event loop.
+
+=head1 AUTHOR
+
+Sanko Robinson <sanko@cpan.org>
+
+=head1 COPYRIGHT
+
+Copyright (C) 2026 by Sanko Robinson.
+
+This library is free software; you can redistribute it and/or modify it under the terms of the Artistic License 2.0.
+
+=cut

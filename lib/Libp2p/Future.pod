@@ -1,0 +1,65 @@
+=pod
+
+=encoding utf-8
+
+=head1 NAME
+
+Libp2p::Future - Lightweight, class-native Future implementation
+
+=head1 SYNOPSIS
+
+    use Libp2p::Future;
+
+    my $future = Libp2p::Future->new();
+
+    $future->then(sub (@args) {
+        say "Got result: @args";
+    })->catch(sub ($err) {
+        warn "Failed: $err";
+    });
+
+    $future->done("success");
+
+=head1 DESCRIPTION
+
+Libp2p::Future is a lightweight implementation of the Future/Promise pattern, designed specifically to work seamlessly
+with Perl's native C<class> feature.
+
+=head1 METHODS
+
+=head2 C<done( @results )>
+
+Resolves the future with the given results.
+
+=head2 C<fail( $error )>
+
+Rejects the future with the given error.
+
+=head2 C<then( $on_ready, [ $on_fail ] )>
+
+Chains a new future. If C<$on_ready> returns a future, it is integrated into the chain.
+
+=head2 C<catch( $on_fail )>
+
+Sugar for C<then(undef, $on_fail)>.
+
+=head2 C<is_ready( )>
+
+Returns true if the future is resolved or failed.
+
+=head2 C<get( )>
+
+Returns the results if ready, or dies if the future failed. B<Note:> This may block if not integrated with an event
+loop.
+
+=head1 AUTHOR
+
+Sanko Robinson <sanko@cpan.org>
+
+=head1 COPYRIGHT
+
+Copyright (C) 2026 by Sanko Robinson.
+
+This library is free software; you can redistribute it and/or modify it under the terms of the Artistic License 2.0.
+
+=cut

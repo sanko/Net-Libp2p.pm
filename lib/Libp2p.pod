@@ -10,7 +10,7 @@ Libp2p - A Perl implementation of the libp2p networking stack
 
     use Libp2p::Host;
 
-    my $host = Net::Libp2p::Host->new( );
+    my $host = Libp2p::Host->new( );
     $host->start( );
 
 =head1 DESCRIPTION
