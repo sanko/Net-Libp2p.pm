@@ -30,7 +30,9 @@
       },
       "runtime" : {
          "requires" : {
+            "Errno" : "0",
             "Math::BigInt" : "0",
+            "Scalar::Util" : "0",
             "Socket" : "0"
          }
       }

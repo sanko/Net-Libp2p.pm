@@ -1,4 +1,6 @@
+requires 'Errno';
 requires 'Math::BigInt';
+requires 'Scalar::Util';
 requires 'Socket';
 on configure => sub {
     requires 'Module::Build::Tiny', '0.034';
