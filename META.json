@@ -27,6 +27,12 @@
             "Module::Build::Tiny" : "0.034",
             "perl" : "v5.40.0"
          }
+      },
+      "runtime" : {
+         "requires" : {
+            "Math::BigInt" : "0",
+            "Socket" : "0"
+         }
       }
    },
    "provides" : {

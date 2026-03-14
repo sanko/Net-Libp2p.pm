@@ -41,6 +41,9 @@ provides:
   Libp2p::Yamux:
     file: lib/Libp2p/Yamux.pm
     version: v0.0.1
+requires:
+  Math::BigInt: '0'
+  Socket: '0'
   Net::Libp2p::ConnectionManager:
     file: lib/Libp2p/ConnectionManager.pm
   Net::Libp2p::Crypto:
