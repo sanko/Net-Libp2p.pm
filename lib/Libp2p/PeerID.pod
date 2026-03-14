@@ -1,0 +1,62 @@
+=pod
+
+=encoding utf-8
+
+=head1 NAME
+
+Libp2p::PeerID - Peer identity representation
+
+=head1 SYNOPSIS
+
+    use Libp2p::PeerID;
+
+    my $peer_id = Libp2p::PeerID->from_public_key($public_key_protobuf);
+    say $peer_id->to_string;
+
+=head1 DESCRIPTION
+
+A PeerID is a unique identifier for a node in the libp2p network. It is typically a cryptographic hash of the node's
+public key. Private keys are not transmitted over the wire, but the serialization format used to store keys on disk is
+also included if you'd like to import existing libp2p key pairs.
+
+=head1 METHODS
+
+=head2 C<to_string( )>
+
+Returns the string representation of the PeerID. Currently supports CIDv1 base32 encoding (starting with 'b').
+
+=head2 C<from_public_key( $class, $pk_pb )>
+
+Class method. Creates a Libp2p::PeerID object from a protobuf-encoded public key.
+
+Uses the IDENTITY multihash if the key is short enough, or SHA2-256 otherwise.
+
+=head2 C<decode( $class, $fh )>
+
+Class method. Decodes a PeerID from a filehandle or scalar reference.
+
+=head2 C<version( )>
+
+=head2 C<codec( )>
+
+=head2 C<hash( )>
+
+=head2 C<digest( )>
+
+=head2 C<raw( )>
+
+=head1 See Also
+
+L<https://github.com/libp2p/specs/blob/master/peer-ids/peer-ids.md>
+
+=head1 AUTHOR
+
+Sanko Robinson <sanko@cpan.org>
+
+=head1 COPYRIGHT
+
+Copyright (C) 2026 by Sanko Robinson.
+
+This library is free software; you can redistribute it and/or modify it under the terms of the Artistic License 2.0.
+
+=cut
