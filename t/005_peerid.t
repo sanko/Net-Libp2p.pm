@@ -92,87 +92,31 @@ subtest 'RSA Public Key' => sub {
     is $parsed_rsa->hash,                   0x12,                 'Parsed raw RSA multihash extracts sha2-256 hash type';
     is unpack( 'H*', $parsed_rsa->digest ), $expected_rsa_digest, 'Parsed raw RSA digest matches';
 };
-subtest Decode => sub {
-
-    #~ https://github.com/libp2p/specs/blob/master/peer-ids/peer-ids.md#decoding
-    # Helper to decode Base58BTC (used for legacy Qm... and 1... strings)
-    sub decode_base58btc {
-        my $str = shift;
-        require Math::BigInt;
-        my $alphabet         = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-        my %map              = map { substr( $alphabet, $_, 1 ) => $_ } 0 .. 57;
-        my $num              = Math::BigInt->new(0);
-        my $leading_zeros    = 0;
-        my $counting_leading = 1;
-        for my $char ( split //, $str ) {
-            if ( $counting_leading && $char eq '1' ) {
-                $leading_zeros++;
-            }
-            else {
-                $counting_leading = 0;
-                $num->bmul(58);
-                $num->badd( $map{$char} );
-            }
-        }
-        my $hex = $num->as_hex;
-        $hex =~ s/^0x//;
-        $hex = '0' . $hex if length($hex) % 2 != 0;
-        return ( "\x00" x $leading_zeros ) . pack( 'H*', $hex );
-    }
-
-    # Helper to decode Base32 (used for CIDv1 bafz... strings without padding)
-    sub decode_multibase_base32 {
-        my $str = shift;
-        $str =~ s/^b//;    # Strip the 'b' multibase prefix
-        my $alphabet = 'abcdefghijklmnopqrstuvwxyz234567';
-        my %map      = map { substr( $alphabet, $_, 1 ) => $_ } 0 .. 31;
-        my $bits     = '';
-        for my $char ( split //, lc($str) ) {
-            $bits .= sprintf( "%05b", $map{$char} );
-        }
-
-        # Drop trailing zero bits (Base32 without padding)
-        my $len = int( length($bits) / 8 ) * 8;
-        $bits = substr( $bits, 0, $len );
-        return pack( 'B*', $bits );
-    }
-
-    # Examples found at the end of the spec
-    my $cid_str = 'bafzbeie5745rpv2m6tjyuugywy4d5ewrqgqqhfnf445he3omzpjbx5xqxe';
-    my $qm_str  = 'QmYyQSo1c1Ym7orWxLYvCrM2EmxFTANf8wXmmE7DWjhx5N';
-    my $ed_str  = '12D3KooWD3eckifWpRn9wQpMG9R9hX3sD158z7EqHWmweQAJU5SA';
-
-    # CIDv1 Base32
-    subtest $cid_str => sub {
-        my $cid_bin = decode_multibase_base32($cid_str);
-        my $peer1   = Libp2p::PeerID->from_binary($cid_bin);
-        ok defined $peer1, 'Parsed base32 CID string successfully';
+subtest Decoding => sub {
+    subtest 'CIDv1 Base32' => sub {
+        my $cid_str = 'bafzbeie5745rpv2m6tjyuugywy4d5ewrqgqqhfnf445he3omzpjbx5xqxe';
+        my $peer1   = Libp2p::PeerID->decode($cid_str);
+        is $peer1,                   D(),  'Parsed base32 CID string successfully';
         is $peer1->version,          1,    'Version is 1';
         is $peer1->codec,            0x72, 'Codec is libp2p-key (0x72)';
         is $peer1->hash,             0x12, 'Hash type is sha2-256 (0x12)';
         is length( $peer1->digest ), 32,   'Extracted digest is exactly 32 bytes';
     };
-
-    # Base58BTC Legacy (sha2-256)
-    subtest $qm_str => sub {
-        my $qm_bin = decode_base58btc($qm_str);
-        my $peer2  = Libp2p::PeerID->from_binary($qm_bin);
-        ok defined $peer2, 'Parsed Qm base58btc string successfully';
+    subtest 'Base58BTC Legacy (sha2-256)' => sub {
+        my $qm_str = 'QmYyQSo1c1Ym7orWxLYvCrM2EmxFTANf8wXmmE7DWjhx5N';
+        my $peer2  = Libp2p::PeerID->decode($qm_str);
+        is $peer2,                   D(),  'Parsed Qm base58btc string successfully';
         is $peer2->version,          0,    'Version defaults to 0';
         is $peer2->hash,             0x12, 'Hash type is sha2-256 (0x12)';
         is length( $peer2->digest ), 32,   'Extracted digest is exactly 32 bytes';
     };
-
-    # Base58BTC Identity (ed25519)
-    subtest $ed_str => sub {
-        my $ed_bin = decode_base58btc($ed_str);
-        my $peer3  = Libp2p::PeerID->from_binary($ed_bin);
-        ok defined $peer3, 'Parsed 12D base58btc string successfully';
-        is $peer3->version, 0,    'Version defaults to 0';
-        is $peer3->hash,    0x00, 'Hash type is identity (0x00)';
-
-        # 12D3Koo is always a 36-byte public key payload
-        is length( $peer3->digest ), 36, 'Extracted digest is exactly 36 bytes';
+    subtest 'Base58BTC Identity (ed25519)' => sub {
+        my $ed_str = '12D3KooWD3eckifWpRn9wQpMG9R9hX3sD158z7EqHWmweQAJU5SA';
+        my $peer3  = Libp2p::PeerID->decode($ed_str);
+        is $peer3,                   D(),  'Parsed 12D base58btc string successfully';
+        is $peer3->version,          0,    'Version defaults to 0';
+        is $peer3->hash,             0x00, 'Hash type is identity (0x00)';
+        is length( $peer3->digest ), 36,   'Extracted digest is exactly 36 bytes';
     };
 };
 #
