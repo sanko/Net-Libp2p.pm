@@ -1,0 +1,61 @@
+=pod
+
+=encoding utf-8
+
+=head1 NAME
+
+Libp2p::Multiaddr - Self-describing network addresses
+
+=head1 SYNOPSIS
+
+    use Libp2p::Multiaddr;
+
+    my $ma = Libp2p::Multiaddr->new( string => '/ip4/127.0.0.1/tcp/4001' );
+
+    say $ma->protocol;  # ip4
+    say $ma->address;   # 127.0.0.1
+    say $ma->transport; # tcp
+    say $ma->port;      # 4001
+
+=head1 DESCRIPTION
+
+Multiaddr is a format for self-describing network addresses. It allows for representing addresses of various protocols
+in a unified, composable way.
+
+=head1 METHODS
+
+=head2 C<protocol( )>
+
+Returns the network protocol (C<ip4>, C<ip6>, etc.).
+
+=head2 C<address( )>
+
+Returns the network address.
+
+=head2 C<transport( )>
+
+Returns the transport protocol (C<tcp>, C<udp>).
+
+=head2 C<port( )>
+
+Returns the transport port.
+
+=head2 C<string( )>
+
+Returns the original multiaddr string.
+
+=head1 See Also
+
+L<https://github.com/libp2p/specs/tree/master/addressing#multiaddr-in-libp2p>
+
+=head1 AUTHOR
+
+Sanko Robinson <sanko@cpan.org>
+
+=head1 COPYRIGHT
+
+Copyright (C) 2026 by Sanko Robinson.
+
+This library is free software; you can redistribute it and/or modify it under the terms of the Artistic License 2.0.
+
+=cut
