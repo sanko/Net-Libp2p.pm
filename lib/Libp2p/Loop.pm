@@ -184,9 +184,7 @@ class Libp2p::Loop v0.1.0 {
         $can_read  //= [];
         $can_write //= [];
         $self->_handle_ready( $can_read, $can_write );
-        if ( $backend eq 'parataxis' ) {
-            Acme::Parataxis->maybe_yield();
-        }
+        Acme::Parataxis->maybe_yield() if $backend eq 'parataxis';
     }
 
     method await ($future) {

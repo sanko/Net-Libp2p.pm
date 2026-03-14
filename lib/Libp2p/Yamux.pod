@@ -1,0 +1,150 @@
+=pod
+
+=encoding utf-8
+
+=head1 NAME
+
+Libp2p::Yamux - Yamux stream multiplexer constants and header handling
+
+=head1 SYNOPSIS
+
+    use Libp2p::Yamux;
+
+    my $header = Libp2p::Yamux->build_header(
+        Libp2p::Yamux::TYPE_DATA,
+        Libp2p::Yamux::FLAG_SYN,
+        1,   # stream ID
+        1024 # length
+    );
+
+=head1 DESCRIPTION
+
+This module provides constants and header parsing/building for the Yamux (Yet another Multiplexer) stream multiplexing
+protocol.
+
+L<Yamux|https://github.com/hashicorp/yamux> is a powerful stream multiplexer used in libp2p. It was initially developed
+by Hashicorp for Go, and is now implemented in Rust, JavaScript and other languages. enables multiple parallel streams
+on a single TCP connection. The design was inspired by SPDY (which later became the basis for HTTP/2), however it is
+not compatible with it.
+
+One of the key features of Yamux is its support for flow control through backpressure. This mechanism helps to prevent
+data from being sent faster than it can be processed. It allows the receiver to specify an offset to which the sender
+can send data, which increases as the receiver processes the data. This helps prevent the sender from overwhelming the
+receiver, especially when the receiver has limited resources or needs to process complex data.
+
+=head1 CONSTANTS
+
+=head2 Message Types
+
+The type field is used to switch the frame message type. The following message types are supported:
+
+=over
+
+=item * C<TYPE_DATA> (0) - Used to transmit data. May transmit zero length payloads depending on the flags.
+
+=item * C<TYPE_WIN_UPDATE> (1) - Used to updated the senders receive window size. This is used to implement per-session flow control.
+
+=item * C<TYPE_PING> (2) - Used to measure RTT. It can also be used to heart-beat and do keep-alives over TCP.
+
+=item * C<TYPE_GO_AWAY> (3) - Used to close a session.
+
+When a session is being terminated, the Go Away message should be sent. The Length should be set to one of the
+following to provide an error code:
+
+=over
+
+=item C<0x0> Normal termination
+
+=item C<0x1> Protocol error
+
+=item C<0x2> Internal error
+
+=back
+
+=back
+
+=head2 Flags
+
+The flags field is used to provide additional information related to the message type. The following flags are
+supported:
+
+=over
+
+=item * C<FLAG_SYN> (1) - Signals the start of a new stream. May be sent with a data or window update message. Also sent with a ping to indicate outbound.
+
+=item * C<FLAG_ACK> (2) - Acknowledges the start of a new stream. May be sent with a data or window update message. Also sent with a ping to indicate response.
+
+=item * C<FLAG_FIN> (4) - Performs a half-close of a stream. May be sent with a data message or window update.
+
+=item * C<FLAG_RST> (8) - Reset a stream immediately. May be sent with a data or window update message.
+
+=back
+
+=head1 METHODS
+
+Yamux uses a streaming connection underneath, but imposes a message framing so that it can be shared between many
+logical streams. Each frame contains a header like:
+
+=over
+
+=item Version (8 bits)
+
+The version field is used for future backward compatibility. At the current time, the field is always set to 0, to
+indicate the initial version.
+
+=item Type (8 bits)
+
+=item Flags (16 bits)
+
+=item StreamID (32 bits)
+
+The StreamID field is used to identify the logical stream the frame is addressing. The client side should use odd ID's,
+and the server even. This prevents any collisions. Additionally, the 0 ID is reserved to represent the session.
+
+Both Ping and Go Away messages should always use the 0 StreamID.
+
+=item Length (32 bits)
+
+The meaning of the length field depends on the message type:
+
+=over
+
+=item Data - provides the length of bytes following the header
+
+=item Window update - provides a delta update to the window size
+
+=item Ping - Contains an opaque value, echoed back
+
+=item Go Away - Contains an error code
+
+=back
+
+=back
+
+This means that each header has a 12 byte overhead. All fields are encoded in network order (big endian).
+
+=head2 C<build_header( $type, $flags, $sid, $len, [ $ver ] )>
+
+Returns a 12-byte Yamux header.
+
+=head2 C<parse_header( $bytes )>
+
+Parses a 12-byte binary string into a hashref containing C<version>, C<type>, C<flags>, C<sid>, and C<length>.
+
+=head2 See Also
+
+L<https://libp2p.io/docs/yamux/>, L<https://github.com/hashicorp/yamux/blob/master/spec.md>
+
+Returns C<undef> if the input is not 12 bytes long.
+
+=head1 AUTHOR
+
+Sanko Robinson <sanko@cpan.org>
+
+=head1 COPYRIGHT
+
+Copyright (C) 2026 by Sanko Robinson.
+
+This library is free software; you can redistribute it and/or modify it under the terms of the Artistic License 2.0.
+
+=cut

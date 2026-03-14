@@ -1,5 +1,5 @@
 {
-   "abstract" : "Unknown",
+   "abstract" : "Perl implementation of the libp2p networking stack",
    "author" : [
       "Sanko Robinson <sanko@cpan.org>"
    ],
@@ -53,14 +53,55 @@
       "Libp2p::Utils" : {
          "file" : "lib/Libp2p/Utils.pm",
          "version" : "v0.0.1"
+      },
+      "Libp2p::Yamux" : {
+         "file" : "lib/Libp2p/Yamux.pm",
+         "version" : "v0.0.1"
+      },
+      "Net::Libp2p::ConnectionManager" : {
+         "file" : "lib/Libp2p/ConnectionManager.pm"
+      },
+      "Net::Libp2p::Crypto" : {
+         "file" : "lib/Libp2p/Crypto.pm"
+      },
+      "Net::Libp2p::Host" : {
+         "file" : "lib/Libp2p/Host.pm",
+         "version" : "v0.1.0"
+      },
+      "Net::Libp2p::Multiaddr" : {
+         "file" : "lib/Libp2p/Multiaddr.pm",
+         "version" : "v0.2.0"
+      },
+      "Net::Libp2p::PeerID" : {
+         "file" : "lib/Libp2p/PeerID.pm"
+      },
+      "Net::Libp2p::PeerStore" : {
+         "file" : "lib/Libp2p/PeerStore.pm",
+         "version" : "v0.1.2"
+      },
+      "Net::Libp2p::ProtoBuf" : {
+         "file" : "lib/Libp2p/ProtoBuf.pm",
+         "version" : "v0.2.0"
+      },
+      "Net::Libp2p::ResourceManager" : {
+         "file" : "lib/Libp2p/ResourceManager.pm",
+         "version" : "v0.1.0"
       }
    },
    "release_status" : "stable",
    "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/sanko/Net-Libp2p.pm/issues"
+      },
+      "homepage" : "https://github.com/sanko/Net-Libp2p.pm",
       "license" : [
          "http://www.perlfoundation.org/artistic_license_2_0"
       ],
-      "repository" : {}
+      "repository" : {
+         "type" : "git",
+         "url" : "git://github.com/sanko/Net-Libp2p.pm.git",
+         "web" : "https://github.com/sanko/Net-Libp2p.pm"
+      }
    },
    "version" : "v0.0.1",
    "x_custom_builder" : 0,
