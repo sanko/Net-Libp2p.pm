@@ -18,15 +18,18 @@ Libp2p::ConnectionManager - Peer connection management and pruning
 
 =head1 DESCRIPTION
 
-The Connection Manager is responsible for tracking active peer connections and ensuring that the number of connections stays within the configured limits.
+The Connection Manager is responsible for tracking active peer connections and ensuring that the number of connections
+stays within the configured limits.
 
-When the maximum number of connections is reached, it will prune existing connections based on its internal strategy to make room for new ones.
+When the maximum number of connections is reached, it will prune existing connections based on its internal strategy to
+make room for new ones.
 
 =head1 METHODS
 
 =head2 C<add_connection( $peer_id, $stream )>
 
-Registers a new connection. Returns true if the connection was accepted, or false if the manager is at capacity and could not prune enough connections.
+Registers a new connection. Returns true if the connection was accepted, or false if the manager is at capacity and
+could not prune enough connections.
 
 =head2 C<remove_connection( $peer_id )>
 

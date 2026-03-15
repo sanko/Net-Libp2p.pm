@@ -103,7 +103,8 @@ class Libp2p::Stream v0.2.0 {
             my $state = $self->_state;
             return unless $state;
             $state->{read_buffer} .= $buf;
-            #~ warnings::warnif  sprintf '[Stream] handle %s READ %d bytes, buffer_len now %d', ( $handle // 'undef' ), $read, length $state->{read_buffer};
+
+      #~ warnings::warnif  sprintf '[Stream] handle %s READ %d bytes, buffer_len now %d', ( $handle // 'undef' ), $read, length $state->{read_buffer};
             $self->_process_pending_reads();
         }
         elsif ( defined $read && $read == 0 ) {
@@ -135,6 +136,7 @@ class Libp2p::Stream v0.2.0 {
                     substr $state->{read_buffer}, 0, $vlen, '';
                     my $msg = substr $state->{read_buffer}, 0, $len, '';
                     $msg =~ s/\n$//;
+
                     #~ warnings::warnif sprintf '[Stream] handle %s DONE msg=[%s]', ( $handle // 'undef' ), $msg;
                     $pr->{future}->done($msg);
                 }
@@ -211,6 +213,7 @@ class Libp2p::Stream v0.2.0 {
     }
 
     method DESTROY () {
+
         #~ warnings::warnif '[Stream] DESTROY handle ' . ( $handle // 'undef' );
         if ( $loop && $handle ) {
             try { $loop->remove_read_handler($handle); } catch ($e) {

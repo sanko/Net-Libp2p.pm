@@ -3,7 +3,7 @@ use feature 'class';
 no warnings 'experimental::class';
 #
 class Libp2p::ResourceManager v0.1.0 {
-    field $max_memory      : param  //= 1024 * 1024 * 1024;    # 1GB
+    field $max_memory      : param //= 1024 * 1024 * 1024;    # 1GB
     field $max_streams     : param //= 1000;
     field $max_connections : param //= 100;
     field $current_memory      = 0;

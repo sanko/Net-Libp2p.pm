@@ -39,13 +39,22 @@
       }
    },
    "provides" : {
-      "Libp2p" : {
-         "file" : "lib/Libp2p.pm",
-         "version" : "v0.0.1"
+      "Libp2p::ConnectionManager" : {
+         "file" : "lib/Libp2p/ConnectionManager.pm"
+      },
+      "Libp2p::Crypto" : {
+         "file" : "lib/Libp2p/Crypto.pm"
+      },
+      "Libp2p::Crypto::PublicKeyMsg" : {
+         "file" : "lib/Libp2p/Crypto.pm"
       },
       "Libp2p::Future" : {
          "file" : "lib/Libp2p/Future.pm",
          "version" : "v0.1.0"
+      },
+      "Libp2p::Host" : {
+         "file" : "lib/Libp2p/Host.pm",
+         "version" : "v0.0.1"
       },
       "Libp2p::IO" : {
          "file" : "lib/Libp2p/IO.pm",
@@ -53,6 +62,29 @@
       },
       "Libp2p::Loop" : {
          "file" : "lib/Libp2p/Loop.pm",
+         "version" : "v0.1.0"
+      },
+      "Libp2p::Multiaddr" : {
+         "file" : "lib/Libp2p/Multiaddr.pm",
+         "version" : "v0.0.1"
+      },
+      "Libp2p::PeerID" : {
+         "file" : "lib/Libp2p/PeerID.pm"
+      },
+      "Libp2p::PeerStore" : {
+         "file" : "lib/Libp2p/PeerStore.pm",
+         "version" : "v0.0.1"
+      },
+      "Libp2p::ProtoBuf" : {
+         "file" : "lib/Libp2p/ProtoBuf.pm",
+         "version" : "v0.0.1"
+      },
+      "Libp2p::ProtoBuf::Message" : {
+         "file" : "lib/Libp2p/ProtoBuf/Message.pm",
+         "version" : "v0.0.1"
+      },
+      "Libp2p::ResourceManager" : {
+         "file" : "lib/Libp2p/ResourceManager.pm",
          "version" : "v0.1.0"
       },
       "Libp2p::Stream" : {
@@ -67,34 +99,9 @@
          "file" : "lib/Libp2p/Yamux.pm",
          "version" : "v0.0.1"
       },
-      "Net::Libp2p::ConnectionManager" : {
-         "file" : "lib/Libp2p/ConnectionManager.pm"
-      },
-      "Net::Libp2p::Crypto" : {
-         "file" : "lib/Libp2p/Crypto.pm"
-      },
-      "Net::Libp2p::Host" : {
-         "file" : "lib/Libp2p/Host.pm",
-         "version" : "v0.1.0"
-      },
-      "Net::Libp2p::Multiaddr" : {
-         "file" : "lib/Libp2p/Multiaddr.pm",
-         "version" : "v0.2.0"
-      },
-      "Net::Libp2p::PeerID" : {
-         "file" : "lib/Libp2p/PeerID.pm"
-      },
-      "Net::Libp2p::PeerStore" : {
-         "file" : "lib/Libp2p/PeerStore.pm",
-         "version" : "v0.1.2"
-      },
-      "Net::Libp2p::ProtoBuf" : {
-         "file" : "lib/Libp2p/ProtoBuf.pm",
-         "version" : "v0.2.0"
-      },
-      "Net::Libp2p::ResourceManager" : {
-         "file" : "lib/Libp2p/ResourceManager.pm",
-         "version" : "v0.1.0"
+      "Net::Libp2p" : {
+         "file" : "lib/Libp2p.pm",
+         "version" : "v0.0.1"
       }
    },
    "release_status" : "stable",
