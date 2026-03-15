@@ -113,7 +113,7 @@ class Libp2p::PeerID {
         my $str = $input;
 
         # Accept filehandles just like the old version
-        if ( openhandle($input) || ( blessed($input) && $input->can('read') ) ) {
+        if ( openhandle($input) || ( builtin::blessed($input) && $input->can('read') ) ) {
             local $/;
             $str = <$input>;
         }

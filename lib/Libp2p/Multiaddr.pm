@@ -21,7 +21,8 @@ class Libp2p::Multiaddr v0.0.1 {
         wss           => { code => 478, size =>  0,  type => 'none' },
         'p2p-circuit' => { code => 290, size =>  0,  type => 'none' },
         dns4          => { code => 54,  size => -1,  type => 'string' },
-        dns6          => { code => 55,  size => -1,  type => 'string' }
+        dns6          => { code => 55,  size => -1,  type => 'string' },
+        dnsaddr       => { code => 56,  size => -1,  type => 'string' }
     );
 
     # Map codes back to canonical names (force 421 back to 'p2p')
@@ -148,9 +149,23 @@ class Libp2p::Multiaddr v0.0.1 {
 
     # Compatibility methods
     method protocol ()  { ( $string =~ m{^/([^/]+)} )[0] }
-    method address ()   { ( $string =~ m{^/[^/]+/([^/]+)} )[0] }
     method transport () { ( $string =~ m{^/[^/]+/[^/]+/([^/]+)} )[0] }
-    method port ()      { ( $string =~ m{^/[^/]+/[^/]+/[^/]+/([^/]+)} )[0] }
+
+    method address () {
+        my @parts = split( '/', $string );
+        for my $i ( 0 .. $#parts ) {
+            return $parts[ $i + 1 ] if $parts[$i] =~ /^(ip4|ip6|dns|dns4|dns6|dnsaddr)$/;
+        }
+        return undef;
+    }
+
+    method port () {
+        my @parts = split( '/', $string );
+        for my $i ( 0 .. $#parts ) {
+            return $parts[ $i + 1 ] if $parts[$i] =~ /^(tcp|udp)$/;
+        }
+        return undef;
+    }
 };
 #
 1;

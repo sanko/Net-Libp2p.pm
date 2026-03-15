@@ -54,22 +54,28 @@ class Libp2p::Loop v0.1.0 {
     }
 
     method add_write_handler ( $fh, $cb ) {
-        my $fn = eval { fileno($fh) };
-        return unless defined $fn;
-        warnings::warnif __CLASS__, '[Loop] add_write_handler: fileno=' . $fn;
-        $write_set->add($fh);
-        $handlers{$fn}{write} = $cb;
+        try {
+            my $fn = fileno($fh);
+            return unless defined $fn;
+            warnings::warnif __CLASS__, '[Loop] add_write_handler: fileno=' . $fn;
+            $write_set->add($fh);
+            $handlers{$fn}{write} = $cb;
+        }
+        catch ($e) {;}
     }
 
     method remove_write_handler ($fh) {
         return unless defined $fh;
         $write_set->remove($fh);
-        my $fn = eval { fileno($fh) };
-        if ( defined $fn ) {
-            warnings::warnif __CLASS__, '[Loop] remove_write_handler: fileno=' . $fn;
-            delete $handlers{$fn}{write};
-            delete $handlers{$fn} unless keys $handlers{$fn}->%*;
+        try {
+            my $fn = fileno($fh);
+            if ( defined $fn ) {
+                warnings::warnif __CLASS__, '[Loop] remove_write_handler: fileno=' . $fn;
+                delete $handlers{$fn}{write};
+                delete $handlers{$fn} unless keys $handlers{$fn}->%*;
+            }
         }
+        catch ($e) {;}
     }
 
     method timer ( $delay, $cb ) {
@@ -77,10 +83,7 @@ class Libp2p::Loop v0.1.0 {
         push @timers, [ $t, $cb ];
         @timers = sort { $a->[0] <=> $b->[0] } @timers;
     }
-
-    method next_tick ($cb) {
-        push @next_tick_queue, $cb;
-    }
+    method next_tick ($cb) { push @next_tick_queue, $cb }
 
     method run () {
         $running = 1;
@@ -105,7 +108,7 @@ class Libp2p::Loop v0.1.0 {
         }
     }
 
-    method _handle_ready ( $can_read, $can_write ) {
+    method _handle_ready ( $can_read, $can_write, $can_err ) {
         if ( $can_read && @$can_read ) {
             for my $fh (@$can_read) {
                 my $fn = eval { fileno($fh) };
@@ -115,13 +118,16 @@ class Libp2p::Loop v0.1.0 {
                 }
             }
         }
-        if ( $can_write && @$can_write ) {
-            for my $fh (@$can_write) {
-                my $fn = eval { fileno($fh) };
-                if ( defined $fn && exists $handlers{$fn} && $handlers{$fn}{write} ) {
-                    try { $handlers{$fn}{write}->($fh) }
-                    catch ($e) { warnings::warnif __CLASS__, '[Loop] Write handler exception: ' . $e }
-                }
+
+        # If a socket is in $can_err, it's failed, treat it as a write-event
+        # so the handler can see the SO_ERROR. Deduplicate to avoid double-firing.
+        my %seen;
+        my @writeable = grep { !$seen{ 0 + $_ }++ } ( @$can_write, @$can_err );
+        for my $fh (@writeable) {
+            my $fn = eval { fileno($fh) };
+            if ( defined $fn && exists $handlers{$fn} && $handlers{$fn}{write} ) {
+                try { $handlers{$fn}{write}->($fh) }
+                catch ($e) { warnings::warnif __CLASS__, '[Loop] Write handler exception: ' . $e }
             }
         }
     }
@@ -177,13 +183,14 @@ class Libp2p::Loop v0.1.0 {
             return;
         }
         my $sel_timeout = $timeout // 0.01;
-        my ( $can_read, $can_write ) = IO::Select->select( $read_set, $write_set, undef, $sel_timeout );
+        my ( $can_read, $can_write, $can_err ) = IO::Select->select( $read_set, $write_set, $write_set, $sel_timeout );
 
         # Windows loopback hack: if select returns nothing, force a poll of all streams
         $self->force_poll() if ( !$can_read || !@$can_read ) && ( !$can_write || !@$can_write ) && $^O eq 'MSWin32' && $read_set->count;
         $can_read  //= [];
         $can_write //= [];
-        $self->_handle_ready( $can_read, $can_write );
+        $can_err   //= [];
+        $self->_handle_ready( $can_read, $can_write, $can_err );
         Acme::Parataxis->maybe_yield() if $backend eq 'parataxis';
     }
 

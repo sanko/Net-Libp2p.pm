@@ -27,14 +27,13 @@ Libp2p::IO - Abstraction layer for network I/O operations
 
 =head1 DESCRIPTION
 
-C<Libp2p::IO> provides a unified interface for network operations within the libp2p stack. It is built on top of
-L<IO::Async>.
+Libp2p::IO provides a unified interface for network operations within the libp2p stack.
 
 =head1 METHODS
 
 =head2 C<loop( )>
 
-Returns the global L<IO::Async::Loop> instance used by this object.
+Returns the global loop instance used by this object.
 
 =head2 C<listen_tcp( %args )>
 
@@ -42,7 +41,7 @@ Starts a TCP listener. Returns the listener object and the bound port.
 
 =head2 C<connect_tcp( %args )>
 
-Initiates a TCP connection. Returns a L<Future> that resolves to an L<IO::Async::Stream> on success.
+Initiates a TCP connection. Returns a L<Future> that resolves to an L<Libp2p::Stream> on success.
 
 =head2 C<listen_udp( %args )>
 

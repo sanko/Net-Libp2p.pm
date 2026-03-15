@@ -212,7 +212,7 @@ class Libp2p::Stream v0.2.0 {
     }
 
     method DESTROY () {
-        warnings::warnif 'Libp2p', '[Stream] DESTROY handle ' . ( $handle // 'undef' );
+        warnings::warnif '[Stream] DESTROY handle ' . ( $handle // 'undef' );
         if ( $loop && $handle ) {
             try { $loop->remove_read_handler($handle); } catch ($e) {
             }

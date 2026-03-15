@@ -35,38 +35,32 @@ class Libp2p::IO v0.2.0 {
     }
 
     method connect_tcp (%args) {
-        my $host = $args{host};
-        my $port = $args{port};
+        my $sock = IO::Socket::IP->new( PeerAddr => $args{host}, PeerPort => $args{port}, Blocking => 0 );
         my $f    = Libp2p::Future->new;
-        my $sock = IO::Socket::IP->new( PeerAddr => $host, PeerPort => $port, Blocking => 0, );
-        if ( !$sock ) {
-            if ( $! == EINPROGRESS || $! == EWOULDBLOCK ) {
-
-                # This case might not happen with IO::Socket::IP->new,
-                # but if it did, we'd need the socket handle.
-                return Libp2p::Future->reject( 'Connection failed: ' . $! );
-            }
-            return Libp2p::Future->reject( 'Connection failed: ' . $! );
-        }
-
-        # Even if $sock is returned, it might not be connected yet in non-blocking mode.
+        return Libp2p::Future->reject( 'Connect failed: ' . $! ) unless $sock;
         if ( $sock->connected ) {
             $f->done($sock);
         }
         else {
+            # Check if error happened immediately
+            my $err = $sock->getsockopt( Socket::SOL_SOCKET, Socket::SO_ERROR );
+            if ($err) {
+                $! = $err;
+                return Libp2p::Future->reject( 'Connection failed: ' . $! );
+            }
+
+            # Add to write AND exception sets (Windows needs the exception set)
             $loop->add_write_handler(
                 $sock,
                 sub ($s) {
                     $loop->remove_write_handler($s);
-
-                    # After write-ready, check for errors
-                    my $err = $s->getsockopt( Socket::SOL_SOCKET, Socket::SO_ERROR );
-                    if ( $err == 0 ) {
-                        $f->done($s);
+                    my $so_err = $s->getsockopt( Socket::SOL_SOCKET, Socket::SO_ERROR );
+                    if ($so_err) {
+                        $! = $so_err;
+                        $f->fail( 'Connection failed: ' . $! );
                     }
                     else {
-                        $! = $err;
-                        $f->fail( 'Connection failed: ' . $! );
+                        $f->done($s);
                     }
                 }
             );
