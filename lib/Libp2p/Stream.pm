@@ -15,7 +15,7 @@ class Libp2p::Stream v0.2.0 {
     field $loop     : param  : reader;
     field $peer_id  : param  : writer : reader //= undef;
     field $protocol : reader : writer = undef;
-    field @on_close_callbacks = ();
+    field @on_close_callbacks;
 
     # Static shared state mapping handle refaddr to state
     my %STREAM_STATE;
@@ -103,8 +103,7 @@ class Libp2p::Stream v0.2.0 {
             my $state = $self->_state;
             return unless $state;
             $state->{read_buffer} .= $buf;
-            warnings::warnif 'Libp2p', sprintf '[Stream] handle %s READ %d bytes, buffer_len now %d', ( $handle // 'undef' ), $read,
-                length $state->{read_buffer};
+            #~ warnings::warnif  sprintf '[Stream] handle %s READ %d bytes, buffer_len now %d', ( $handle // 'undef' ), $read, length $state->{read_buffer};
             $self->_process_pending_reads();
         }
         elsif ( defined $read && $read == 0 ) {
@@ -136,7 +135,7 @@ class Libp2p::Stream v0.2.0 {
                     substr $state->{read_buffer}, 0, $vlen, '';
                     my $msg = substr $state->{read_buffer}, 0, $len, '';
                     $msg =~ s/\n$//;
-                    warnings::warnif 'Libp2p', sprintf '[Stream] handle %s DONE msg=[%s]', ( $handle // 'undef' ), $msg;
+                    #~ warnings::warnif sprintf '[Stream] handle %s DONE msg=[%s]', ( $handle // 'undef' ), $msg;
                     $pr->{future}->done($msg);
                 }
                 else {
@@ -212,7 +211,7 @@ class Libp2p::Stream v0.2.0 {
     }
 
     method DESTROY () {
-        warnings::warnif '[Stream] DESTROY handle ' . ( $handle // 'undef' );
+        #~ warnings::warnif '[Stream] DESTROY handle ' . ( $handle // 'undef' );
         if ( $loop && $handle ) {
             try { $loop->remove_read_handler($handle); } catch ($e) {
             }

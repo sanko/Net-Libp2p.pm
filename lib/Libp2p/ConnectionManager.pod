@@ -1,0 +1,57 @@
+=pod
+
+=encoding utf-8
+
+=head1 NAME
+
+Libp2p::ConnectionManager - Peer connection management and pruning
+
+=head1 SYNOPSIS
+
+    my $conn_mgr = Libp2p::ConnectionManager->new(
+        host            => $host,
+        max_connections => 100,
+        min_connections => 20
+    );
+
+    $conn_mgr->add_connection( $peer_id, $stream );
+
+=head1 DESCRIPTION
+
+The Connection Manager is responsible for tracking active peer connections and ensuring that the number of connections stays within the configured limits.
+
+When the maximum number of connections is reached, it will prune existing connections based on its internal strategy to make room for new ones.
+
+=head1 METHODS
+
+=head2 C<add_connection( $peer_id, $stream )>
+
+Registers a new connection. Returns true if the connection was accepted, or false if the manager is at capacity and could not prune enough connections.
+
+=head2 C<remove_connection( $peer_id )>
+
+Unregisters a peer connection.
+
+=head2 C<get_connection( $peer_id )>
+
+Returns the active stream for the given peer ID, if any.
+
+=head2 C<prune_connections( )>
+
+Manually triggers the connection pruning logic.
+
+=head2 C<connection_count( )>
+
+Returns the current number of tracked connections.
+
+=head1 AUTHOR
+
+Sanko Robinson <sanko@cpan.org>
+
+=head1 COPYRIGHT
+
+Copyright (C) 2026 by Sanko Robinson.
+
+This library is free software; you can redistribute it and/or modify it under the terms of the Artistic License 2.0.
+
+=cut

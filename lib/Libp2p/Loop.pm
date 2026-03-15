@@ -18,7 +18,7 @@ class Libp2p::Loop v0.1.0 {
 
     #
     ADJUST {
-        warnings::warnif __CLASS__, '[Loop] ADJUST: loop=' . $self;
+        #~ warnings::warnif __CLASS__, '[Loop] ADJUST: loop=' . $self;
         my $forced = $ENV{LIBP2P_LOOP_BACKEND};
         if ( $forced && $forced eq 'native' ) {
             $backend = 'native';
@@ -30,14 +30,16 @@ class Libp2p::Loop v0.1.0 {
         else {
             $backend = eval { require Acme::Parataxis; 1 } ? 'parataxis' : 'native';
         }
-        warnings::warnif __CLASS__, '[Loop] Backend: ' . $backend;
+
+        #~ warnings::warnif __CLASS__, '[Loop] Backend: ' . $backend;
         @next_tick_queue = ();
     }
 
     method add_read_handler ( $fh, $cb ) {
         my $fn = eval { fileno($fh) };
         return unless defined $fn;
-        warnings::warnif __CLASS__, '[Loop] add_read_handler: fileno=' . $fn;
+
+        #~ warnings::warnif __CLASS__, '[Loop] add_read_handler: fileno=' . $fn;
         $read_set->add($fh);
         $handlers{$fn}{read} = $cb;
     }
@@ -47,7 +49,8 @@ class Libp2p::Loop v0.1.0 {
         $read_set->remove($fh);
         my $fn = eval { fileno($fh) };
         if ( defined $fn ) {
-            warnings::warnif __CLASS__, '[Loop] remove_read_handler: fileno=' . $fn;
+
+            #~ warnings::warnif __CLASS__, '[Loop] remove_read_handler: fileno=' . $fn;
             delete $handlers{$fn}{read};
             delete $handlers{$fn} unless keys $handlers{$fn}->%*;
         }
@@ -57,7 +60,8 @@ class Libp2p::Loop v0.1.0 {
         try {
             my $fn = fileno($fh);
             return unless defined $fn;
-            warnings::warnif __CLASS__, '[Loop] add_write_handler: fileno=' . $fn;
+
+            #~ warnings::warnif __CLASS__, '[Loop] add_write_handler: fileno=' . $fn;
             $write_set->add($fh);
             $handlers{$fn}{write} = $cb;
         }
@@ -70,7 +74,8 @@ class Libp2p::Loop v0.1.0 {
         try {
             my $fn = fileno($fh);
             if ( defined $fn ) {
-                warnings::warnif __CLASS__, '[Loop] remove_write_handler: fileno=' . $fn;
+
+                #~ warnings::warnif __CLASS__, '[Loop] remove_write_handler: fileno=' . $fn;
                 delete $handlers{$fn}{write};
                 delete $handlers{$fn} unless keys $handlers{$fn}->%*;
             }
@@ -114,7 +119,10 @@ class Libp2p::Loop v0.1.0 {
                 my $fn = eval { fileno($fh) };
                 if ( defined $fn && exists $handlers{$fn} && $handlers{$fn}{read} ) {
                     try { $handlers{$fn}{read}->($fh) }
-                    catch ($e) { warnings::warnif __CLASS__, '[Loop] Read handler exception: ' . $e }
+                    catch ($e) {
+
+                        #~ warnings::warnif __CLASS__, '[Loop] Read handler exception: ' . $e
+                    }
                 }
             }
         }
@@ -127,7 +135,10 @@ class Libp2p::Loop v0.1.0 {
             my $fn = eval { fileno($fh) };
             if ( defined $fn && exists $handlers{$fn} && $handlers{$fn}{write} ) {
                 try { $handlers{$fn}{write}->($fh) }
-                catch ($e) { warnings::warnif __CLASS__, '[Loop] Write handler exception: ' . $e }
+                catch ($e) {
+
+                    #~ warnings::warnif __CLASS__, '[Loop] Write handler exception: ' . $e
+                }
             }
         }
     }
@@ -165,7 +176,10 @@ class Libp2p::Loop v0.1.0 {
         @next_tick_queue = ();
         for my $cb (@to_run) {
             try { $cb->() }
-            catch ($e) { warnings::warnif __CLASS__, '[Loop] next_tick exception: ' . $e }
+            catch ($e) {
+
+                #~ warnings::warnif __CLASS__, '[Loop] next_tick exception: ' . $e
+            }
         }
 
         # Process timers
@@ -175,7 +189,10 @@ class Libp2p::Loop v0.1.0 {
         }
         for my $t (@expired_timers) {
             try { $t->[1]->() }
-            catch ($e) { warnings::warnif __CLASS__, '[Loop] Timer exception: ' . $e }
+            catch ($e) {
+
+                #~ warnings::warnif __CLASS__, '[Loop] Timer exception: ' . $e
+            }
         }
         if ( !$read_set->count && !$write_set->count ) {
             return         if @to_run || @expired_timers;
@@ -211,7 +228,8 @@ class Libp2p::Loop v0.1.0 {
                 if ( $ENV{DEBUG} && $now - $last_print >= 5 ) {
                     $last_print = $now;
                     my @handles = eval { $read_set->handles } || ();
-                    warnings::warnif __CLASS__, '[Loop] await loop: ' . scalar(@handles) . ' handles in read_set';
+
+                    #~ warnings::warnif __CLASS__, '[Loop] await loop: ' . scalar(@handles) . ' handles in read_set';
                 }
                 $self->tick(0.001);
 
@@ -231,15 +249,7 @@ class Libp2p::Loop v0.1.0 {
             return $future->get;
         }
     }
-    my $INSTANCE;
-
-    sub get ($class) {
-        unless ($INSTANCE) {
-            $INSTANCE = $class->new();
-            warnings::warnif __PACKAGE__, '[Loop] New singleton created: ' . $INSTANCE;
-        }
-        return $INSTANCE;
-    }
+    sub get ($class) { CORE::state $INSTANCE //= $class->new(); $INSTANCE }
 };
 #
 1;

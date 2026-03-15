@@ -1,0 +1,85 @@
+=pod
+
+=encoding utf-8
+
+=head1 NAME
+
+Libp2p::Host - Modular P2P networking host
+
+=head1 SYNOPSIS
+
+    use Libp2p::Host;
+
+    my $host = Libp2p::Host->new(
+        port    => 4001,
+        peer_id => $my_peer_id
+    );
+
+    # Register a protocol handler
+    $host->set_handler( '/my-proto/1.0', sub ($stream) {
+        $stream->write_msg( 'Hello, Peer!' );
+    });
+
+    # Connect to another host
+    $host->dial( '/ip4/127.0.0.1/tcp/5001/p2p/Qm...', '/my-proto/1.0' )->then(sub ($ss) {
+        $ss->read_msg()->then(sub ($reply) {
+            say 'Peer said: '. $reply;
+        });
+    });
+
+=head1 DESCRIPTION
+
+Libp2p::Host is a libp2p-inspired networking host that manages multiple protocol handlers over shared, multiplexed
+connections.
+
+=head1 METHODS
+
+=head2 C<new(%params)>
+
+Constructor.
+
+Expects the following params:
+
+=over
+
+=item C<port>: Local listen port (defaults to C<4001>).
+
+=item C<address>: Local listen address (defaults to C<0.0.0.0>).
+
+=item C<peer_id>: An object representing the local peer identity.
+
+=back
+
+=head2 C<dial($multiaddr, $protocol)>
+
+Connects to a remote peer via a multiaddr string and negotiates the requested protocol. Returns a L<Future> resolving
+to a L<Libp2p::Stream>.
+
+=head2 C<set_handler($protocol, $callback)>
+
+Registers a callback for an incoming protocol request. The callback will be passed a L<Libp2p::Stream> object.
+
+=head2 C<tick($timeout //= 0)>
+
+Drives the internal event loop for one iteration. Useful for embedding the host into another event loop or a manual
+C<while> loop.
+
+=head2 C<run_loop( )>
+
+Enters the main event loop and runs until the program is terminated.
+
+=head1 SEE ALSO
+
+L<Libp2p::Stream>, L<Libp2p::Multiaddr>, L<Libp2p::PeerStore>
+
+=head1 AUTHOR
+
+Sanko Robinson <sanko@cpan.org>
+
+=head1 COPYRIGHT
+
+Copyright (C) 2026 by Sanko Robinson.
+
+This library is free software; you can redistribute it and/or modify it under the terms of the Artistic License 2.0.
+
+=cut
