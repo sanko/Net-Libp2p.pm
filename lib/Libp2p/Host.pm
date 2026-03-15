@@ -214,7 +214,7 @@ class Libp2p::Host v0.0.1 {
                                         my $pid_obj;
                                         try { $pid_obj = Libp2p::PeerID->from_binary( pack( "H*", $pid_str ) ) }
                                         catch ($e) {
-                                            if ( $pid_str =~ /^z([a-f0-9]+)$/ ) {
+                                            if ( $pid_str =~ /^f([a-f0-9]+)$/i ) {
                                                 try { $pid_obj = Libp2p::PeerID->from_binary( pack( "H*", $1 ) ) } catch ($e2) {
                                                 }
                                             }

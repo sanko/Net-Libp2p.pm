@@ -10,8 +10,8 @@ class Libp2p::PeerStore v0.0.1 {
         $peer_id // return '';
         return $peer_id->to_string if ref($peer_id) && $peer_id->isa('Libp2p::PeerID');
 
-        # If it's already a string that looks like our canonical ID (starts with z and is hex)
-        return $peer_id if $peer_id =~ /^z[a-f0-9]+$/i;
+        # If it's already a canonical multibase string (starts with f, z, b, Qm, 1, etc.)
+        return $peer_id if $peer_id =~ /^[a-zA-Z0-9]+$/;
 
         # If it's binary data, try to decode to canonical string
         if ( length($peer_id) >= 32 ) {

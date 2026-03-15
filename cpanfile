@@ -1,3 +1,4 @@
+requires 'Algorithm::Kademlia', 'v1.1.1';
 requires 'Crypt::PK::Ed25519';
 requires 'Errno';
 requires 'Math::BigInt';

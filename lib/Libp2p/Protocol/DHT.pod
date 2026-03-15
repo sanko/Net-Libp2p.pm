@@ -1,0 +1,62 @@
+=pod
+
+=encoding utf-8
+
+=head1 NAME
+
+Libp2p::Protocol::DHT - libp2p Kademlia DHT protocol implementation
+
+=head1 SYNOPSIS
+
+    my $dht = Libp2p::Protocol::DHT->new(host => $host);
+    $dht->register();
+
+    # Find the 20 closest peers to a given PeerID
+    $dht->find_node($target_peer_id_bin)->then(sub ($peers) {
+        for my $peer (@$peers) {
+            say 'Found peer: ' . Libp2p::PeerID->new(raw => $peer->{id})->to_string;
+        }
+    });
+
+=head1 DESCRIPTION
+
+This module implements the libp2p Kademlia DHT protocol (C</ipfs/kad/1.0.0>). It uses L<Algorithm::Kademlia> for
+routing table logic and provides the standard libp2p Protobuf-based RPC interface.
+
+=head1 METHODS
+
+=head2 C<register( )>
+
+Registers the DHT protocol handler on the host.
+
+=head2 C<find_node( $target_peer_id_bin )>
+
+Performs an iterative search for the closest nodes to the target ID. Returns a L<Libp2p::Future> resolving to an
+arrayref of peer records.
+
+=head2 C<handle_stream( $stream )>
+
+Internal handler for incoming DHT RPC requests.
+
+=head1 ACCESSORS
+
+=head2 routing_table
+
+Returns the underlying L<Algorithm::Kademlia::RoutingTable> object.
+
+=head2 See Also
+
+L<Algorithm::Kademlia::RoutingTable>
+
+=head1 AUTHOR
+
+Sanko Robinson <sanko@cpan.org>
+
+=head1 COPYRIGHT
+
+Copyright (C) 2026 by Sanko Robinson.
+
+This library is free software; you can redistribute it and/or modify it under the terms of the Artistic License 2.0.
+
+=cut
+

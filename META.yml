@@ -52,6 +52,15 @@ provides:
   Libp2p::ProtoBuf::Message:
     file: lib/Libp2p/ProtoBuf/Message.pm
     version: v0.0.1
+  Libp2p::Protocol::DHT:
+    file: lib/Libp2p/Protocol/DHT.pm
+    version: v0.2.0
+  Libp2p::Protocol::DHT::Message:
+    file: lib/Libp2p/Protocol/DHT.pm
+  Libp2p::Protocol::DHT::Message::Peer:
+    file: lib/Libp2p/Protocol/DHT.pm
+  Libp2p::Protocol::DHT::Message::Record:
+    file: lib/Libp2p/Protocol/DHT.pm
   Libp2p::ResourceManager:
     file: lib/Libp2p/ResourceManager.pm
     version: v0.1.0
@@ -68,6 +77,7 @@ provides:
     file: lib/Libp2p.pm
     version: v0.0.1
 requires:
+  Algorithm::Kademlia: v1.1.1
   Crypt::PK::Ed25519: '0'
   Errno: '0'
   Math::BigInt: '0'
