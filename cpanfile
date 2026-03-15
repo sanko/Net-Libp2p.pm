@@ -1,3 +1,4 @@
+requires 'Crypt::PK::Ed25519';
 requires 'Errno';
 requires 'Math::BigInt';
 requires 'Scalar::Util';

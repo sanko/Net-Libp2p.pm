@@ -42,6 +42,7 @@ provides:
     file: lib/Libp2p/Yamux.pm
     version: v0.0.1
 requires:
+  Crypt::PK::Ed25519: '0'
   Errno: '0'
   Math::BigInt: '0'
   Scalar::Util: '0'

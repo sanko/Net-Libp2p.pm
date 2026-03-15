@@ -30,6 +30,7 @@
       },
       "runtime" : {
          "requires" : {
+            "Crypt::PK::Ed25519" : "0",
             "Errno" : "0",
             "Math::BigInt" : "0",
             "Scalar::Util" : "0",
