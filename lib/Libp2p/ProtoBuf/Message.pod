@@ -1,0 +1,73 @@
+=pod
+
+=encoding utf-8
+
+=head1 NAME
+
+Libp2p::ProtoBuf::Message - Base class for Protocol Buffers messages
+
+=head1 SYNOPSIS
+
+    class My::Message : isa(Libp2p::ProtoBuf::Message) {
+        field $id    : reader : writer(set_id);
+        field $name  : reader : writer(set_name);
+
+        __PACKAGE__->pb_field(1, 'id', 'int32', writer => 'set_id');
+        __PACKAGE__->pb_field(2, 'name', 'string', writer => 'set_name');
+    }
+
+    my $bin = My::Message->new(id => 1, name => 'foo')->to_pb();
+    my $msg = My::Message->from_pb($bin);
+
+=head1 DESCRIPTION
+
+Libp2p::ProtoBuf::Message provides a base class and a declarative DSL for defining Protobuf messages using Perl's
+C<class> and C<field> features.
+
+=head1 METHODS
+
+=head2 C<pb_field( $tag, $name, $type, [%options] )>
+
+Defines a field in the message.
+
+=over
+
+=item * C<$tag>: The Protobuf field number.
+
+=item * C<$name>: The name of the Perl field (and its default reader/writer).
+
+=item * C<$type>: The Protobuf type (C<string>, C<bytes>, C<int32>, C<uint64>, C<message>, etc).
+
+=item * C<%options>:
+
+=over
+
+=item * C<writer>: The name of the writer method to use during decoding (mandatory if the field doesn't have an lvalue-capable accessor).
+
+=item * C<class>: The Perl class name for C<message> types.
+
+=item * C<repeated>: Boolean indicating if the field is a list.
+
+=back
+
+=back
+
+=head2 C<to_pb( )>
+
+Instance method. Returns the binary Protobuf representation of the message.
+
+=head2 C<from_pb( $data )>
+
+Class method. Decodes binary data into a new instance of the message class.
+
+=head1 AUTHOR
+
+Sanko Robinson <sanko@cpan.org>
+
+=head1 COPYRIGHT
+
+Copyright (C) 2026 by Sanko Robinson.
+
+This library is free software; you can redistribute it and/or modify it under the terms of the Artistic License 2.0.
+
+=cut

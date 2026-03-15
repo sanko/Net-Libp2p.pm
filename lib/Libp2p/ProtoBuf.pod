@@ -1,0 +1,45 @@
+=pod
+
+=encoding utf-8
+
+=head1 NAME
+
+Net::Libp2p::ProtoBuf - Lightweight Protocol Buffers implementation for libp2p
+
+=head1 SYNOPSIS
+
+    use Libp2p::ProtoBuf;
+
+    my $pb = Libp2p::ProtoBuf->new( );
+    my $bin = $pb->encode( $message_object );
+    my $msg = $pb->decode( 'My::Message::Class', $bin );
+
+=head1 DESCRIPTION
+
+Libp2p::ProtoBuf is a pure-Perl implementation of the Protocol Buffers serialization format, optimized for the
+requirements of the libp2p stack.
+
+It works in conjunction with L<Libp2p::ProtoBuf::Message> to provide a declarative way to define and serialize
+messages.
+
+=head1 METHODS
+
+=head2 C<encode( $message_object )>
+
+Encodes a message object into binary Protobuf format.
+
+=head2 C<decode( $class, $binary_data )>
+
+Decodes binary Protobuf data into a new instance of C<$class>.
+
+=head1 AUTHOR
+
+Sanko Robinson <sanko@cpan.org>
+
+=head1 COPYRIGHT
+
+Copyright (C) 2026 by Sanko Robinson.
+
+This library is free software; you can redistribute it and/or modify it under the terms of the Artistic License 2.0.
+
+=cut

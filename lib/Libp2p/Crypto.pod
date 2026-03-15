@@ -1,0 +1,58 @@
+=pod
+
+=encoding utf-8
+
+=head1 NAME
+
+Libp2p::Crypto - Cryptographic identity and key management
+
+=head1 SYNOPSIS
+
+    use Libp2p::Crypto;
+
+    my $crypto = Libp2p::Crypto->new( );
+
+    # Get local PeerID (CID object)
+    my $pid = $crypto->peer_id( );
+
+    # Sign a message
+    my $sig = $crypto->key->sign_message( 'data to sign' );
+
+=head1 DESCRIPTION
+
+Libp2p::Crypto manages the identities and keys used within the libp2p networking stack. It handles Ed25519 for node
+identity and signatures, and X25519 for Diffie-Hellman key exchanges (like L<Noise>).
+
+=head1 METHODS
+
+=head2 C<peer_id( )>
+
+Returns a L<Libp2p::PeerID> object representing the local node's PeerID, derived from its public key.
+
+=head2 C<public_key_raw( )>
+
+Returns the raw Ed25519 public key wrapped in the standard libp2p Protobuf format.
+
+=head2 C<peer_id_from_public_key( $pk )>
+
+Computes a PeerID (CID) from a raw public key string.
+
+=head2 C<static_x25519( )>
+
+Returns the static X25519 key used for secure handshakes.
+
+=head1 SEE ALSO
+
+L<Libp2p::Host>
+
+=head1 AUTHOR
+
+Sanko Robinson <sanko@cpan.org>
+
+=head1 COPYRIGHT
+
+Copyright (C) 2026 by Sanko Robinson.
+
+This library is free software; you can redistribute it and/or modify it under the terms of the Artistic License 2.0.
+
+=cut
