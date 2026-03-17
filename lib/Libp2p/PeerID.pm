@@ -123,7 +123,10 @@ class Libp2p::PeerID {
         if ( $str =~ /^b[a-z2-7]+$/ ) {
             $bin = $class->decode_multibase_base32($str);
         }
-        elsif ( $str =~ /^(Qm|1)[1-9A-HJ-NP-Za-km-z]+$/ ) {
+        elsif ( $str =~ /^z([1-9A-HJ-NP-Za-km-z]+)$/ ) {  # Multibase Base58BTC
+            $bin = $class->decode_base58btc($1);
+        }
+        elsif ( $str =~ /^(Qm|1)[1-9A-HJ-NP-Za-km-z]+$/ ) { # Legacy Base58BTC
             $bin = $class->decode_base58btc($str);
         }
         else {
