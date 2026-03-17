@@ -8,6 +8,9 @@ class Libp2p::ProtoBuf v0.0.1 {
     # Field types
     use constant { TYPE_VARINT => 0, TYPE_64BIT => 1, TYPE_LENGTH => 2, TYPE_32BIT => 5 };
 
+    # Security Limits
+    use constant { MAX_RECURSION_DEPTH => 32, MAX_ARRAY_ELEMENTS => 65536 };
+
     method encode ($msg_obj) {
         my $out    = '';
         my %fields = $msg_obj->_pb_fields();
@@ -15,13 +18,9 @@ class Libp2p::ProtoBuf v0.0.1 {
         for my $tag ( sort { $a <=> $b } keys %fields ) {
             my $info = $fields{$tag};
             my $val  = $msg_obj->${ \( $info->{name} ) };
-
-            # say "DEBUG: tag=$tag name=$info->{name} val=" . ($val // 'undef');
             next unless defined $val;
             if ( $info->{type} eq 'map' ) {
                 if ( $syntax eq 'proto3' && !scalar keys %$val ) {
-
-                    # say "DEBUG: skipping empty map $info->{name}";
                     next;
                 }
                 while ( my ( $k, $v ) = each %$val ) {
@@ -33,8 +32,6 @@ class Libp2p::ProtoBuf v0.0.1 {
             }
             elsif ( $info->{repeated} ) {
                 if ( $syntax eq 'proto3' && !scalar @$val ) {
-
-                    # say "DEBUG: skipping empty repeated $info->{name}";
                     next;
                 }
                 if ( $info->{packed} || ( $syntax eq 'proto3' && $self->_is_packable( $info->{type} ) ) ) {
@@ -84,12 +81,14 @@ class Libp2p::ProtoBuf v0.0.1 {
         return pack( 'C', ( $tag << 3 ) | $wire ) . $data;
     }
 
-    method decode ( $class, $data ) {
+    method decode ( $class, $data, $depth //= 0 ) {
+        die "Protobuf Error: Max recursion depth exceeded" if $depth > MAX_RECURSION_DEPTH;
         my $msg_obj       = $class->new();
         my %fields        = $msg_obj->_pb_fields();
         my %tags_to_names = map { $_ => $fields{$_} } keys %fields;
         my $pos           = 0;
-        while ( $pos < length($data) ) {
+        my $data_len      = length($data);
+        while ( $pos < $data_len ) {
             my ( $tag_and_wire, $vlen ) = decode_varint( $data, $pos );
             last unless defined $tag_and_wire;
             $pos += $vlen;
@@ -100,15 +99,17 @@ class Libp2p::ProtoBuf v0.0.1 {
                 if ( $info->{type} eq 'map' ) {
                     my ( $len, $vl ) = decode_varint( $data, $pos );
                     $pos += $vl;
+                    die "Protobuf Error: Field length exceeds available data" if $pos + $len > $data_len;
                     my $entry_data = substr( $data, $pos, $len );
                     $pos += $len;
-                    my ( $mk, $mv ) = $self->_decode_map_entry( $info, $entry_data );
+                    my ( $mk, $mv ) = $self->_decode_map_entry( $info, $entry_data, $depth + 1 );
                     my $target = $msg_obj->${ \( $info->{name} ) };
                     if ( !defined $target ) {
                         $target = {};
                         my $writer = $info->{writer} // 'set_' . $info->{name};
                         $msg_obj->$writer($target);
                     }
+                    die "Protobuf Error: Map exceeds max keys" if scalar( keys %$target ) >= MAX_ARRAY_ELEMENTS;
                     $target->{$mk} = $mv;
                     next;
                 }
@@ -116,11 +117,13 @@ class Libp2p::ProtoBuf v0.0.1 {
                 if ( $wire == TYPE_LENGTH && $self->_is_packable( $info->{type} ) && $info->{repeated} ) {
                     my ( $len, $vl ) = decode_varint( $data, $pos );
                     $pos += $vl;
+                    die "Protobuf Error: Packed length exceeds available data" if $pos + $len > $data_len;
                     my $end = $pos + $len;
                     while ( $pos < $end ) {
-                        my ( $v, $vl ) = decode_varint( $data, $pos );
+                        my ( $v, $vl_inner ) = decode_varint( $data, $pos );
                         push @vals, $v;
-                        $pos += $vl;
+                        $pos += $vl_inner;
+                        die "Protobuf Error: Packed array exceeds max elements" if scalar(@vals) > MAX_ARRAY_ELEMENTS;
                     }
                 }
                 elsif ( $wire == TYPE_VARINT ) {
@@ -131,10 +134,11 @@ class Libp2p::ProtoBuf v0.0.1 {
                 elsif ( $wire == TYPE_LENGTH ) {
                     my ( $len, $vl ) = decode_varint( $data, $pos );
                     $pos += $vl;
+                    die "Protobuf Error: Field length exceeds available data" if $pos + $len > $data_len;
                     my $val = substr( $data, $pos, $len );
                     $pos += $len;
                     if ( $info->{type} eq 'message' ) {
-                        $val = $self->decode( $info->{class}, $val );
+                        $val = $self->decode( $info->{class}, $val, $depth + 1 );
                     }
                     push @vals, $val;
                 }
@@ -146,6 +150,7 @@ class Libp2p::ProtoBuf v0.0.1 {
                             my $writer = $info->{writer} // 'set_' . $info->{name};
                             $msg_obj->$writer($target);
                         }
+                        die "Protobuf Error: Repeated array exceeds max elements" if scalar( $target->@* ) >= MAX_ARRAY_ELEMENTS;
                         push $target->@*, $val;
                     }
                     else {
@@ -155,25 +160,31 @@ class Libp2p::ProtoBuf v0.0.1 {
                 }
             }
             else {
+                # Skip unknown fields safely
                 if ( $wire == TYPE_VARINT ) {
                     my ( undef, $vl ) = decode_varint( $data, $pos );
                     $pos += $vl;
                 }
                 elsif ( $wire == TYPE_LENGTH ) {
                     my ( $len, $vl ) = decode_varint( $data, $pos );
+                    die "Protobuf Error: Unknown field length exceeds available data" if $pos + $vl + $len > $data_len;
                     $pos += $vl + $len;
                 }
                 elsif ( $wire == TYPE_64BIT ) { $pos += 8; }
                 elsif ( $wire == TYPE_32BIT ) { $pos += 4; }
+                else {
+                    die "Protobuf Error: Unknown wire type $wire";
+                }
             }
         }
         return $msg_obj;
     }
 
-    method _decode_map_entry( $info, $data ) {
+    method _decode_map_entry( $info, $data, $depth ) {
         my ( $k, $v );
-        my $pos = 0;
-        while ( $pos < length($data) ) {
+        my $pos      = 0;
+        my $data_len = length($data);
+        while ( $pos < $data_len ) {
             my ( $tw, $vl ) = decode_varint( $data, $pos );
             $pos += $vl;
             my $tag = $tw >> 3;
@@ -181,6 +192,7 @@ class Libp2p::ProtoBuf v0.0.1 {
                 if ( $info->{key_type} eq 'string' || $info->{key_type} eq 'bytes' ) {
                     my ( $len, $lvl ) = decode_varint( $data, $pos );
                     $pos += $lvl;
+                    die "Protobuf Error: Map key length exceeds available data" if $pos + $len > $data_len;
                     $k = substr( $data, $pos, $len );
                     $pos += $len;
                 }
@@ -194,6 +206,7 @@ class Libp2p::ProtoBuf v0.0.1 {
                 if ( $info->{val_type} eq 'string' || $info->{val_type} eq 'bytes' ) {
                     my ( $len, $lvl ) = decode_varint( $data, $pos );
                     $pos += $lvl;
+                    die "Protobuf Error: Map val length exceeds available data" if $pos + $len > $data_len;
                     $v = substr( $data, $pos, $len );
                     $pos += $len;
                 }
