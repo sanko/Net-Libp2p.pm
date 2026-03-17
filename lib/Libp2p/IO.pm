@@ -25,7 +25,9 @@ class Libp2p::IO v0.2.0 {
         $loop->add_read_handler(
             $sock,
             sub ($lsock) {
+                say "[DEBUG] [IO] Lsock read handler triggered" if $ENV{DEBUG};
                 while ( my $new_sock = $lsock->accept ) {
+                    say "[DEBUG] [IO] Accepted new connection" if $ENV{DEBUG};
                     $new_sock->blocking(0);
                     $on_connect_cb->($new_sock);
                 }
