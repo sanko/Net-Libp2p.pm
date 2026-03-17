@@ -4,15 +4,15 @@
 
 =head1 NAME
 
-Libp2p::Yamux - Yamux stream multiplexer constants and header handling
+Libp2p::Muxer::Yamux - Yamux stream multiplexer constants and header handling
 
 =head1 SYNOPSIS
 
-    use Libp2p::Yamux;
+    use Libp2p::Mutex::Yamux;
 
-    my $header = Libp2p::Yamux->build_header(
-        Libp2p::Yamux::TYPE_DATA,
-        Libp2p::Yamux::FLAG_SYN,
+    my $header = Libp2p::Mutex::Yamux->build_header(
+        Libp2p::Mutex::Yamux::TYPE_DATA,
+        Libp2p::Mutex::Yamux::FLAG_SYN,
         1,   # stream ID
         1024 # length
     );

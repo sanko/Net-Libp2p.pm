@@ -29,12 +29,22 @@
    },
    "optional_features" : {
       "TLS" : {
-         "description" : "TLS 1.3",
+         "description" : "TLS 1.3 Support",
          "prereqs" : {
             "runtime" : {
                "requires" : {
                   "IO::Socket::SSL" : "0",
                   "Net::SSLeay" : "0"
+               }
+            }
+         }
+      },
+      "dnsaddr" : {
+         "description" : "dnsaddr is a protocol that instructs the resolver to lookup multiaddr(s) in DNS TXT records for the domain name in it's value section.",
+         "prereqs" : {
+            "runtime" : {
+               "requires" : {
+                  "Net::DNS" : "0"
                }
             }
          }
@@ -48,6 +58,11 @@
          }
       },
       "runtime" : {
+         "recommends" : {
+            "IO::Socket::SSL" : "0",
+            "Net::DNS" : "0",
+            "Net::SSLeay" : "0"
+         },
          "requires" : {
             "Algorithm::Kademlia" : "v1.1.1",
             "Crypt::PK::Ed25519" : "0",
@@ -56,10 +71,6 @@
             "Noise" : "0",
             "Scalar::Util" : "0",
             "Socket" : "0"
-         },
-         "x_recommended" : {
-            "IO::Socket::SSL" : "0",
-            "Net::SSLeay" : "0"
          }
       },
       "test" : {
@@ -100,6 +111,10 @@
          "file" : "lib/Libp2p/Multiaddr.pm",
          "version" : "v0.0.1"
       },
+      "Libp2p::Muxer::Yamux::Stream" : {
+         "file" : "lib/Libp2p/Muxer/Yamux.pm",
+         "version" : "v0.0.1"
+      },
       "Libp2p::PeerID" : {
          "file" : "lib/Libp2p/PeerID.pm"
       },
@@ -115,6 +130,34 @@
          "file" : "lib/Libp2p/ProtoBuf/Message.pm",
          "version" : "v0.0.1"
       },
+      "Libp2p::Protocol::AutoNAT" : {
+         "file" : "lib/Libp2p/Protocol/AutoNAT.pm",
+         "version" : "v0.1.0"
+      },
+      "Libp2p::Protocol::AutoNAT::V1::Message" : {
+         "file" : "lib/Libp2p/Protocol/AutoNAT.pm"
+      },
+      "Libp2p::Protocol::AutoNAT::V1::Message::Dial" : {
+         "file" : "lib/Libp2p/Protocol/AutoNAT.pm"
+      },
+      "Libp2p::Protocol::AutoNAT::V1::Message::Peer" : {
+         "file" : "lib/Libp2p/Protocol/AutoNAT.pm"
+      },
+      "Libp2p::Protocol::AutoNAT::V1::Message::Response" : {
+         "file" : "lib/Libp2p/Protocol/AutoNAT.pm"
+      },
+      "Libp2p::Protocol::AutoNAT::V2::Message::DialBack" : {
+         "file" : "lib/Libp2p/Protocol/AutoNAT.pm"
+      },
+      "Libp2p::Protocol::AutoNAT::V2::Message::DialBackResponse" : {
+         "file" : "lib/Libp2p/Protocol/AutoNAT.pm"
+      },
+      "Libp2p::Protocol::AutoNAT::V2::Message::DialRequest" : {
+         "file" : "lib/Libp2p/Protocol/AutoNAT.pm"
+      },
+      "Libp2p::Protocol::AutoNAT::V2::Message::DialResponse" : {
+         "file" : "lib/Libp2p/Protocol/AutoNAT.pm"
+      },
       "Libp2p::Protocol::DHT" : {
          "file" : "lib/Libp2p/Protocol/DHT.pm",
          "version" : "v0.2.0"
@@ -128,6 +171,13 @@
       "Libp2p::Protocol::DHT::Message::Record" : {
          "file" : "lib/Libp2p/Protocol/DHT.pm"
       },
+      "Libp2p::Protocol::Identify" : {
+         "file" : "lib/Libp2p/Protocol/Identify.pm",
+         "version" : "v0.1.0"
+      },
+      "Libp2p::Protocol::Identify::Message" : {
+         "file" : "lib/Libp2p/Protocol/Identify/Message.pm"
+      },
       "Libp2p::Protocol::Noise" : {
          "file" : "lib/Libp2p/Protocol/Noise.pm",
          "version" : "v0.0.1"
@@ -137,6 +187,14 @@
       },
       "Libp2p::Protocol::Noise::SecureStream" : {
          "file" : "lib/Libp2p/Protocol/Noise/SecureStream.pm",
+         "version" : "v0.0.1"
+      },
+      "Libp2p::Protocol::TLS::ASN1" : {
+         "file" : "lib/Libp2p/Protocol/TLS.pm",
+         "version" : "v0.0.1"
+      },
+      "Libp2p::Protocol::TLS::SecureStream" : {
+         "file" : "lib/Libp2p/Protocol/TLS.pm",
          "version" : "v0.0.1"
       },
       "Libp2p::ResourceManager" : {
@@ -149,10 +207,6 @@
       },
       "Libp2p::Utils" : {
          "file" : "lib/Libp2p/Utils.pm",
-         "version" : "v0.0.1"
-      },
-      "Libp2p::Yamux" : {
-         "file" : "lib/Libp2p/Yamux.pm",
          "version" : "v0.0.1"
       },
       "Net::Libp2p" : {

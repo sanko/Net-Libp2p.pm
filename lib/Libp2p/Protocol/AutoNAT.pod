@@ -1,0 +1,66 @@
+=pod
+
+=encoding utf-8
+
+=head1 NAME
+
+Libp2p::Protocol::AutoNAT - NAT status detection protocol
+
+=head1 SYNOPSIS
+
+    my $autonat = Libp2p::Protocol::AutoNAT->new(host => $host);
+    $autonat->register(); # Register handler on the host
+
+    # Check our own reachability via a peer (v1)
+    $autonat->check_reachability_v1($peer_addr)->then(sub ($resp) {
+        if ($resp->status == Libp2p::Protocol::AutoNAT::V1_OK) {
+            say "We are publicly reachable at: " . $resp->addr;
+        }
+    });
+
+    # Check our own reachability via a peer (v2)
+    $autonat->check_reachability_v2($peer_addr)->then(sub ($resp) {
+        if ($resp->status == Libp2p::Protocol::AutoNAT::V2_OK) {
+            say "We are publicly reachable, confirmed at index: " . $resp->addr_idx;
+        }
+    });
+
+=head1 DESCRIPTION
+
+AutoNAT is a protocol that helps nodes determine their reachability from the public internet. It supports both v1 and
+v2 versions.
+
+A node can request other nodes to attempt to dial it back on its reported addresses. If the dial-back is successful,
+the node knows it is publicly reachable.
+
+=head1 METHODS
+
+=head2 C<register( )>
+
+Registers the AutoNAT protocol handler (both v1 and v2) on the host.
+
+=head2 C<check_reachability_v1( $peer_addr )>
+
+Requests the peer at C<$peer_addr> to verify our reachability using AutoNAT v1. Returns a L<Libp2p::Future> that
+resolves to a v1 response object.
+
+=head2 C<check_reachability_v2( $peer_addr )>
+
+Requests the peer at C<$peer_addr> to verify our reachability using AutoNAT v2. Returns a L<Libp2p::Future> that
+resolves to a v2 response object.
+
+=head1 SEE ALSO
+
+L<https://libp2p.io/docs/autonat/>
+
+=head1 AUTHOR
+
+Sanko Robinson <sanko@cpan.org>
+
+=head1 COPYRIGHT
+
+Copyright (C) 2026 by Sanko Robinson.
+
+This library is free software; you can redistribute it and/or modify it under the terms of the Artistic License 2.0.
+
+=cut

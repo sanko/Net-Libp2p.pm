@@ -59,6 +59,9 @@ provides:
   Libp2p::Multiaddr:
     file: lib/Libp2p/Multiaddr.pm
     version: v0.0.1
+  Libp2p::Muxer::Yamux::Stream:
+    file: lib/Libp2p/Muxer/Yamux.pm
+    version: v0.0.1
   Libp2p::PeerID:
     file: lib/Libp2p/PeerID.pm
   Libp2p::PeerStore:
@@ -70,6 +73,25 @@ provides:
   Libp2p::ProtoBuf::Message:
     file: lib/Libp2p/ProtoBuf/Message.pm
     version: v0.0.1
+  Libp2p::Protocol::AutoNAT:
+    file: lib/Libp2p/Protocol/AutoNAT.pm
+    version: v0.1.0
+  Libp2p::Protocol::AutoNAT::V1::Message:
+    file: lib/Libp2p/Protocol/AutoNAT.pm
+  Libp2p::Protocol::AutoNAT::V1::Message::Dial:
+    file: lib/Libp2p/Protocol/AutoNAT.pm
+  Libp2p::Protocol::AutoNAT::V1::Message::Peer:
+    file: lib/Libp2p/Protocol/AutoNAT.pm
+  Libp2p::Protocol::AutoNAT::V1::Message::Response:
+    file: lib/Libp2p/Protocol/AutoNAT.pm
+  Libp2p::Protocol::AutoNAT::V2::Message::DialBack:
+    file: lib/Libp2p/Protocol/AutoNAT.pm
+  Libp2p::Protocol::AutoNAT::V2::Message::DialBackResponse:
+    file: lib/Libp2p/Protocol/AutoNAT.pm
+  Libp2p::Protocol::AutoNAT::V2::Message::DialRequest:
+    file: lib/Libp2p/Protocol/AutoNAT.pm
+  Libp2p::Protocol::AutoNAT::V2::Message::DialResponse:
+    file: lib/Libp2p/Protocol/AutoNAT.pm
   Libp2p::Protocol::DHT:
     file: lib/Libp2p/Protocol/DHT.pm
     version: v0.2.0
@@ -79,6 +101,11 @@ provides:
     file: lib/Libp2p/Protocol/DHT.pm
   Libp2p::Protocol::DHT::Message::Record:
     file: lib/Libp2p/Protocol/DHT.pm
+  Libp2p::Protocol::Identify:
+    file: lib/Libp2p/Protocol/Identify.pm
+    version: v0.1.0
+  Libp2p::Protocol::Identify::Message:
+    file: lib/Libp2p/Protocol/Identify/Message.pm
   Libp2p::Protocol::Noise:
     file: lib/Libp2p/Protocol/Noise.pm
     version: v0.0.1
@@ -88,6 +115,11 @@ provides:
     file: lib/Libp2p/Protocol/Noise/SecureStream.pm
     version: v0.0.1
   Libp2p::Protocol::TLS::ASN1:
+    file: lib/Libp2p/Protocol/TLS.pm
+    version: v0.0.1
+  Libp2p::Protocol::TLS::SecureStream:
+    file: lib/Libp2p/Protocol/TLS.pm
+    version: v0.0.1
   Libp2p::ResourceManager:
     file: lib/Libp2p/ResourceManager.pm
     version: v0.1.0
@@ -96,9 +128,6 @@ provides:
     version: v0.2.0
   Libp2p::Utils:
     file: lib/Libp2p/Utils.pm
-    version: v0.0.1
-  Libp2p::Yamux:
-    file: lib/Libp2p/Yamux.pm
     version: v0.0.1
   Net::Libp2p:
     file: lib/Libp2p.pm

@@ -8,7 +8,7 @@ class Libp2p::Protocol::Noise::SecureStream v0.0.1 : isa(Noise::Stream) {
     #
     field $loop : param : reader;
     field $raw_read_buffer = '';
-    field $read_buffer = '';
+    field $read_buffer     = '';
     field @on_data_callbacks;
     field @on_close_callbacks;
     #
@@ -34,24 +34,22 @@ class Libp2p::Protocol::Noise::SecureStream v0.0.1 : isa(Noise::Stream) {
     }
 
     method _on_read_ready () {
-        my $buf = '';
+        my $buf  = '';
         my $read = sysread( $self->socket, $buf, 65536 );
-
         if ( defined $read && $read > 0 ) {
             $raw_read_buffer .= $buf;
 
             # Extract and decrypt as many complete noise packets as possible
             while ( length($raw_read_buffer) >= 2 ) {
-                my $packet_len = unpack('n', substr($raw_read_buffer, 0, 2));
-
+                my $packet_len = unpack( 'n', substr( $raw_read_buffer, 0, 2 ) );
                 if ( length($raw_read_buffer) >= 2 + $packet_len ) {
-                    substr($raw_read_buffer, 0, 2, ''); # Remove length prefix
-                    my $cipher = substr($raw_read_buffer, 0, $packet_len, ''); # Extract payload
-
-                    my $plain = $self->c_recv->decrypt_with_ad( '', $cipher );
+                    substr( $raw_read_buffer, 0, 2, '' );                           # Remove length prefix
+                    my $cipher = substr( $raw_read_buffer, 0, $packet_len, '' );    # Extract payload
+                    my $plain  = $self->c_recv->decrypt_with_ad( '', $cipher );
                     $read_buffer .= $plain;
-                } else {
-                    last; # Wait for the rest of the packet to arrive over TCP
+                }
+                else {
+                    last;                                                           # Wait for the rest of the packet to arrive over TCP
                 }
             }
             $self->_trigger_data() if length($read_buffer) > 0;
@@ -65,9 +63,9 @@ class Libp2p::Protocol::Noise::SecureStream v0.0.1 : isa(Noise::Stream) {
     }
 
     method _trigger_data () {
+
         # In a real impl, we'd have a higher-level Stream object wrapping this
     }
-
     method on_close ($cb) { push @on_close_callbacks, $cb; return $self }
 
     method close () {
