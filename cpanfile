@@ -5,6 +5,9 @@ requires 'Math::BigInt';
 requires 'Noise';
 requires 'Scalar::Util';
 requires 'Socket';
+recommends 'IO::Socket::SSL';
+recommends 'Net::DNS';
+recommends 'Net::SSLeay';
 on configure => sub {
     requires 'Module::Build::Tiny', '0.034';
     requires 'perl',                'v5.40.0';

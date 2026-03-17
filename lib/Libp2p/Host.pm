@@ -92,22 +92,30 @@ class Libp2p::Host v0.0.1 {
         }
 
         # Handle DNS resolution anywhere in the multiaddr string
-        if ( $multiaddr_str =~ m{/(dns(?:4|6)?)/([^/]+)} ) {
+        if ( $multiaddr_str =~ m{/(dns(?:4|6|addr)?)/([^/]+)} ) {
             my $proto     = $1;
             my $host_name = $2;
             try {
-                my $ip = $self->_resolve_dns( $host_name, $proto );
-                if ($ip) {
-                    my $is_ipv6 = ( $ip =~ /:/ );
-                    if ( $proto eq 'dns6' && !$is_ipv6 ) {
-                        return $io_utils->loop->new_future->fail("DNS6 resolved to IPv4: $ip");
+                if ( $proto eq 'dnsaddr' ) {
+                    my $resolved_ma = $self->_resolve_dnsaddr($host_name);
+                    die "No _dnsaddr TXT records found for $host_name" unless $resolved_ma;
+                    $multiaddr_str =~ s{/$proto/$host_name}{$resolved_ma};
+                    say "[NETWORK] [Host] Resolved $host_name (dnsaddr) to $resolved_ma" if $ENV{DEBUG};
+                }
+                else {
+                    my $ip = $self->_resolve_dns( $host_name, $proto );
+                    if ($ip) {
+                        my $is_ipv6 = ( $ip =~ /:/ );
+                        if ( $proto eq 'dns6' && !$is_ipv6 ) {
+                            return $io_utils->loop->new_future->fail("DNS6 resolved to IPv4: $ip");
+                        }
+                        if ( $proto eq 'dns4' && $is_ipv6 ) {
+                            return $io_utils->loop->new_future->fail("DNS4 resolved to IPv6: $ip");
+                        }
+                        my $new_proto = $is_ipv6 ? 'ip6' : 'ip4';
+                        $multiaddr_str =~ s{/$proto/$host_name}{/$new_proto/$ip};
+                        say "[NETWORK] [Host] Resolved $host_name ($proto) to $ip ($new_proto)" if $ENV{DEBUG};
                     }
-                    if ( $proto eq 'dns4' && $is_ipv6 ) {
-                        return $io_utils->loop->new_future->fail("DNS4 resolved to IPv6: $ip");
-                    }
-                    my $new_proto = $is_ipv6 ? 'ip6' : 'ip4';
-                    $multiaddr_str =~ s{/$proto/$host_name}{/$new_proto/$ip};
-                    say "[NETWORK] [Host] Resolved $host_name ($proto) to $ip ($new_proto)" if $ENV{DEBUG};
                 }
             }
             catch ($e) {
@@ -235,14 +243,16 @@ class Libp2p::Host v0.0.1 {
 
                 # Ignore peername extraction failures quietly
             }
-            say "[NETWORK][Host] Accepted connection";
+            say "[NETWORK][Host] Accepted connection" if $ENV{DEBUG};
             $conn_mgr->add_connection( "$handle", $stream );
             $stream->on_close( sub { $resource_manager->close_connection() } );
         }
+        say "[DEBUG] [Host] Triggering read check..." if $ENV{DEBUG};
         $stream->trigger_read_check();
         my $sid       = builtin::blessed( $stream->handle ) ? "${\$stream->handle}" : "$stream";
         my $session_f = $stream->read_msg()->then(
             sub ($msg) {
+                say "[DEBUG] [Host] Received message during handshake: '$msg'" if $ENV{DEBUG};
                 if ( $msg eq "/multistream/1.0.0" ) {
                     say "[NETWORK] [Host] Received /multistream/1.0.0, ACKing" if $ENV{DEBUG};
                     return $stream->write_msg("/multistream/1.0.0")->then( sub { $stream->read_msg() } );
@@ -251,7 +261,7 @@ class Libp2p::Host v0.0.1 {
             }
         )->then(
             sub ($protocol) {
-                say "[NETWORK] [Host] Peer requested protocol: $protocol" if $ENV{DEBUG};
+                say "[DEBUG] [Host] Negotiated protocol: '$protocol'" if $ENV{DEBUG};
                 if ( my $handler = $handlers->{$protocol} ) {
                     return $stream->write_msg($protocol)->then(
                         sub {
@@ -281,6 +291,25 @@ class Libp2p::Host v0.0.1 {
         );
         $_active_sessions{$sid} = $session_f;
         return $session_f;
+    }
+
+    method _resolve_dnsaddr ($hostname) {
+        my $ok = eval { require Net::DNS; 1 };
+        die "Net::DNS module required for /dnsaddr/ multiaddr resolution." unless $ok;
+        my $res   = Net::DNS::Resolver->new;
+        my $query = $res->search( "_dnsaddr.$hostname", 'TXT' );
+        if ($query) {
+            for my $rr ( $query->answer ) {
+                next unless $rr->type eq 'TXT';
+
+                # Net::DNS TXT data can be split across multiple char strings if long
+                my $txt = join( '', $rr->char_str_list() );
+                if ( $txt =~ /^dnsaddr=(.+)$/ ) {
+                    return $1;
+                }
+            }
+        }
+        return undef;
     }
 
     method _resolve_dns ( $hostname, $protocol ) {
