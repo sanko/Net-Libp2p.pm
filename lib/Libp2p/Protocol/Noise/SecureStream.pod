@@ -1,0 +1,48 @@
+=pod
+
+=encoding utf-8
+
+=head1 NAME
+
+Libp2p::Protocol::Noise::SecureStream - Encrypted duplex channel
+
+=head1 SYNOPSIS
+
+    # Usually created via Libp2p::Protocol::Noise
+    my $secure_stream = ...;
+
+    $secure_stream->write_msg("Top secret");
+    my $msg = $secure_stream->read_msg();
+
+=head1 DESCRIPTION
+
+Libp2p::Protocol::Noise::SecureStream is a subclass of L<Noise::Stream> (from the C<Noise> distribution) that provides
+encrypted communication after a successful handshake.
+
+It handles transparent encryption/decryption of all data sent over the underlying transport.
+
+=head1 METHODS
+
+=head2 C<write_msg( $data )>
+
+Encrypts and writes a message.
+
+=head2 C<read_msg( [ $timeout ] )>
+
+Reads and decrypts a message.
+
+=head2 C<negotiate( $protocol )>
+
+Override. Handles protocol negotiation over the encrypted channel.
+
+=head1 AUTHOR
+
+Sanko Robinson <sanko@cpan.org>
+
+=head1 COPYRIGHT
+
+Copyright (C) 2026 by Sanko Robinson.
+
+This library is free software; you can redistribute it and/or modify it under the terms of the Artistic License 2.0.
+
+=cut

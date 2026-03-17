@@ -1,4 +1,5 @@
 {
+   "X_No_Archive" : "Yes",
    "abstract" : "Perl implementation of the libp2p networking stack",
    "author" : [
       "Sanko Robinson <sanko@cpan.org>"
@@ -16,10 +17,28 @@
    },
    "name" : "Libp2p",
    "no_index" : {
-      "directory" : [],
+      "directory" : [
+         "t",
+         "xt",
+         "share",
+         "eg"
+      ],
       "file" : [],
       "namespace" : [],
       "package" : []
+   },
+   "optional_features" : {
+      "TLS" : {
+         "description" : "TLS 1.3",
+         "prereqs" : {
+            "runtime" : {
+               "requires" : {
+                  "IO::Socket::SSL" : "0",
+                  "Net::SSLeay" : "0"
+               }
+            }
+         }
+      }
    },
    "prereqs" : {
       "configure" : {
@@ -34,8 +53,20 @@
             "Crypt::PK::Ed25519" : "0",
             "Errno" : "0",
             "Math::BigInt" : "0",
+            "Noise" : "0",
             "Scalar::Util" : "0",
             "Socket" : "0"
+         },
+         "x_recommended" : {
+            "IO::Socket::SSL" : "0",
+            "Net::SSLeay" : "0"
+         }
+      },
+      "test" : {
+         "requires" : {
+            "Test2::Plugin::UTF8" : "0",
+            "Test2::Tools::Compare" : "0",
+            "Test2::V0" : "0"
          }
       }
    },
@@ -97,6 +128,17 @@
       "Libp2p::Protocol::DHT::Message::Record" : {
          "file" : "lib/Libp2p/Protocol/DHT.pm"
       },
+      "Libp2p::Protocol::Noise" : {
+         "file" : "lib/Libp2p/Protocol/Noise.pm",
+         "version" : "v0.0.1"
+      },
+      "Libp2p::Protocol::Noise::HandshakePayload" : {
+         "file" : "lib/Libp2p/Protocol/Noise.pm"
+      },
+      "Libp2p::Protocol::Noise::SecureStream" : {
+         "file" : "lib/Libp2p/Protocol/Noise/SecureStream.pm",
+         "version" : "v0.0.1"
+      },
       "Libp2p::ResourceManager" : {
          "file" : "lib/Libp2p/ResourceManager.pm",
          "version" : "v0.1.0"
@@ -135,6 +177,10 @@
    },
    "version" : "v0.0.1",
    "x_custom_builder" : 0,
+   "x_help_wanted" : [
+      "Tester",
+      "Documenter"
+   ],
    "x_ignore" : [
       ".tidyallrc",
       ".gitignore",

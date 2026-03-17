@@ -1,0 +1,49 @@
+=pod
+
+=encoding utf-8
+
+=head1 NAME
+
+Libp2p::Protocol::Noise - libp2p Noise security handshake
+
+=head1 SYNOPSIS
+
+    my $noise_proto = Libp2p::Protocol::Noise->new(node => $host);
+
+    # Secure an existing stream
+    $noise_proto->initiate_handshake($stream)->then(sub ($secure_stream) {
+        $secure_stream->write_msg( 'Encrypted data' );
+    });
+
+=head1 DESCRIPTION
+
+This module implements the libp2p security handshake using the Noise Protocol Framework. Specifically, it supports the
+Noise C<XX> handshake pattern with static X25519 keys.
+
+=head1 METHODS
+
+=head2 C<initiate_handshake( $stream )>
+
+Initiates a Noise handshake as the initiator. Returns a L<Future> that resolves to a
+C<Libp2p::Protocol::Noise::SecureStream> object.
+
+=head2 C<handle_stream( $stream )>
+
+Responds to an incoming Noise handshake. Returns a L<Future> that resolves to a
+C<Libp2p::Protocol::Noise::SecureStream> object.
+
+=head1 SEE ALSO
+
+L<Noise>
+
+=head1 AUTHOR
+
+Sanko Robinson <sanko@cpan.org>
+
+=head1 COPYRIGHT
+
+Copyright (C) 2026 by Sanko Robinson.
+
+This library is free software; you can redistribute it and/or modify it under the terms of the Artistic License 2.0.
+
+=cut

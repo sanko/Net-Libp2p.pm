@@ -12,7 +12,7 @@ package Libp2p::Crypto::PublicKeyMsg {
         field $Data : reader : writer = undef;
 
         method _pb_fields () {
-            return ( 1 => { name => 'Type', type => 'enum' }, 2 => { name => 'Data', type => 'bytes' }, );
+            return ( 1 => { name => 'Type', type => 'enum' }, 2 => { name => 'Data', type => 'bytes' } );
         }
     }
 }
@@ -92,34 +92,34 @@ class Libp2p::Crypto {
         Libp2p::PeerID->from_public_key($pk_pb);
     }
 
-    method verify ( $data, $sig, $pub_key_bytes = undef ) {
-        if ($pub_key_bytes) {
+    method verify ( $data, $sig, $pub_key_raw_bytes //= undef ) {
+        if ($pub_key_raw_bytes) {
 
-            # Decode the protobuf wrapper
+            # Decode the protobuf message to get the inner key
             my $pb_engine = Libp2p::ProtoBuf->new();
-            my $msg       = $pb_engine->decode( 'Libp2p::Crypto::PublicKeyMsg', $pub_key_bytes );
+            my $msg       = $pb_engine->decode( 'Libp2p::Crypto::PublicKeyMsg', $pub_key_raw_bytes );
             my $k_type    = $msg->Type;
-            my $k_data    = $msg->Data;
-            die "Invalid PublicKey Protobuf: Missing Type or Data" unless defined $k_type && defined $k_data;
+            my $k_data    = $msg->Data;                                                                 # This is the raw key bytes
 
+            #~ die "Invalid PublicKey Protobuf: Missing Type or Data" unless defined $k_type && defined $k_data;
+            # TODO - These types should be constants somewhere
             # Instantiate the correct CryptX verifier
+            my $vkey;
             if ( $k_type == 1 ) {    # Ed25519
-                my $vkey = Crypt::PK::Ed25519->new();
+                $vkey = Crypt::PK::Ed25519->new();
                 $vkey->import_key_raw( $k_data, 'public' );
-                return $vkey->verify_message( $sig, $data );
             }
             elsif ( $k_type == 0 ) {    # RSA (DER format, new(\$data) works)
-                my $vkey = Crypt::PK::RSA->new( \$k_data );
-                return $vkey->verify_message( $sig, $data );
+                $vkey = Crypt::PK::RSA->new( \$k_data );
             }
             elsif ( $k_type == 2 ) {    # Secp256k1
-                my $vkey = Crypt::PK::ECC->new();
+                $vkey = Crypt::PK::ECC->new();
                 $vkey->import_key_raw( $k_data, 'public', 'secp256k1' );
-                return $vkey->verify_message( $sig, $data );
             }
             else {
                 die "Unsupported or unknown KeyType ($k_type) during verification.";
             }
+            return $vkey->verify_message( $sig, $data );
         }
 
         # Self-verification fallback
