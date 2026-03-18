@@ -7,7 +7,7 @@ no warnings 'experimental::class';
 use lib '../lib';
 use Libp2p::Host;
 use Libp2p::Crypto;
-use Libp2p::Protocol::Noise;
+use Libp2p::Security::Noise;
 use Libp2p::Loop;
 #
 alarm(60);
@@ -16,12 +16,12 @@ my $loop = Libp2p::Loop->get;
 subtest 'Noise Handshake' => sub {
     my $c1 = Libp2p::Crypto->new;
     my $h1 = Libp2p::Host->new( port => 0, address => '127.0.0.1', crypto => $c1 );
-    my $n1 = Libp2p::Protocol::Noise->new( host => $h1 );
+    my $n1 = Libp2p::Security::Noise->new( host => $h1 );
     $n1->register();
     #
     my $c2 = Libp2p::Crypto->new;
     my $h2 = Libp2p::Host->new( port => 0, address => '127.0.0.1', crypto => $c2 );
-    my $n2 = Libp2p::Protocol::Noise->new( host => $h2 );
+    my $n2 = Libp2p::Security::Noise->new( host => $h2 );
     $n2->register();
     #
     $h1->peer_store->add_addr( $h2->peer_id->to_string, '/ip4/127.0.0.1/tcp/' . $h2->port );
@@ -39,7 +39,7 @@ subtest 'Noise Handshake' => sub {
     my $secure_stream = $loop->await($handshake_f);
     #
     ok $secure_stream, 'Noise handshake completed';
-    isa_ok $secure_stream, ['Libp2p::Protocol::Noise::SecureStream'];
+    isa_ok $secure_stream, ['Libp2p::Security::Noise::SecureStream'];
 };
 #
 done_testing;

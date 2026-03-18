@@ -4,11 +4,11 @@
 
 =head1 NAME
 
-Libp2p::Protocol::Noise - libp2p Noise security handshake
+Libp2p::Security::Noise - libp2p Noise security handshake
 
 =head1 SYNOPSIS
 
-    my $noise_proto = Libp2p::Protocol::Noise->new(node => $host);
+    my $noise_proto = Libp2p::Security::Noise->new(node => $host);
 
     # Secure an existing stream
     $noise_proto->initiate_handshake($stream)->then(sub ($secure_stream) {
@@ -25,12 +25,12 @@ Noise C<XX> handshake pattern with static X25519 keys.
 =head2 C<initiate_handshake( $stream )>
 
 Initiates a Noise handshake as the initiator. Returns a L<Future> that resolves to a
-C<Libp2p::Protocol::Noise::SecureStream> object.
+C<Libp2p::Security::Noise::SecureStream> object.
 
 =head2 C<handle_stream( $stream )>
 
 Responds to an incoming Noise handshake. Returns a L<Future> that resolves to a
-C<Libp2p::Protocol::Noise::SecureStream> object.
+C<Libp2p::Security::Noise::SecureStream> object.
 
 =head1 SEE ALSO
 

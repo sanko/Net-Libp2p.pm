@@ -4,11 +4,11 @@
 
 =head1 NAME
 
-Libp2p::Protocol::DHT - libp2p Kademlia DHT protocol implementation
+Libp2p::Routing::DHT - libp2p Kademlia DHT protocol implementation
 
 =head1 SYNOPSIS
 
-    my $dht = Libp2p::Protocol::DHT->new(host => $host);
+    my $dht = Libp2p::Routing::DHT->new(host => $host);
     $dht->register();
 
     # Find the 20 closest peers to a given PeerID
@@ -38,9 +38,7 @@ arrayref of peer records.
 
 Internal handler for incoming DHT RPC requests.
 
-=head1 ACCESSORS
-
-=head2 routing_table
+=head2 C<routing_table( )>
 
 Returns the underlying L<Algorithm::Kademlia::RoutingTable> object.
 

@@ -28,8 +28,8 @@ $node->io_utils->loop->new_future->done($node)->then(
     sub ( $host, $stream ) {
         if ( $sig =~ /tls/ ) {
             say "\n[1] TCP Connected. Negotiated /tls/1.0.0.";
-            require Libp2p::Protocol::TLS;
-            my $tls = Libp2p::Protocol::TLS->new( host => $host );
+            require Libp2p::Security::TLS;
+            my $tls = Libp2p::Security::TLS->new( host => $host );
             return $tls->initiate_handshake($stream)->then(
                 sub ($secure_stream) {
                     return ( $host, $secure_stream );
@@ -38,8 +38,8 @@ $node->io_utils->loop->new_future->done($node)->then(
         }
         else {
             say "\n[1] TCP Connected. Negotiated /noise.";
-            require Libp2p::Protocol::Noise;
-            my $noise = Libp2p::Protocol::Noise->new( host => $host );
+            require Libp2p::Security::Noise;
+            my $noise = Libp2p::Security::Noise->new( host => $host );
             return $noise->initiate_handshake($stream)->then(
                 sub ($secure_stream) {
                     return ( $host, $secure_stream );
@@ -96,7 +96,7 @@ __END__
 use v5.40;
 use lib '../lib', 'lib';
 use Libp2p;
-use Libp2p::Protocol::Noise;
+use Libp2p::Security::Noise;
 use Libp2p::Protocol::Identify;
 use Libp2p::Muxer::Yamux;
 
@@ -129,7 +129,7 @@ $node->dial($target_ma, '/noise')->then(sub ($stream) {
     say "\n[1] TCP Connected. Multistream negotiated /noise.";
     say "=> Initiating Noise XX Handshake...";
 
-    my $noise = Libp2p::Protocol::Noise->new(host => $node);
+    my $noise = Libp2p::Security::Noise->new(host => $node);
     return $noise->initiate_handshake($stream);
 
 })->then(sub ($secure_stream) {

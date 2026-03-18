@@ -2,14 +2,14 @@ use v5.40;
 use feature 'class';
 no warnings 'experimental::class';
 #
-class Libp2p::Protocol::Noise::HandshakePayload v0.0.1 : isa(Libp2p::ProtoBuf::Message) {
+class Libp2p::Security::Noise::HandshakePayload v0.0.1 : isa(Libp2p::ProtoBuf::Message) {
     field $identityKey : param : reader : writer(set_identityKey) //= undef;
     field $identitySig : param : reader : writer(set_identitySig) //= undef;
     __PACKAGE__->pb_field( 1, 'identityKey', 'bytes', writer => 'set_identityKey' );
     __PACKAGE__->pb_field( 2, 'identitySig', 'bytes', writer => 'set_identitySig' );
 };
 #
-class Libp2p::Protocol::Noise::SecureStream v0.0.1 : isa(Libp2p::Stream) {
+class Libp2p::Security::Noise::SecureStream v0.0.1 : isa(Libp2p::Stream) {
     use Scalar::Util qw[weaken blessed];
     use Errno qw[EAGAIN EWOULDBLOCK];
     field $c_send : param;
@@ -107,7 +107,7 @@ class Libp2p::Protocol::Noise::SecureStream v0.0.1 : isa(Libp2p::Stream) {
     }
 };
 #
-class Libp2p::Protocol::Noise v0.0.1 {
+class Libp2p::Security::Noise v0.0.1 {
     use Noise;
     use Libp2p::Future;
     #
@@ -143,7 +143,7 @@ class Libp2p::Protocol::Noise v0.0.1 {
                 my ( $c_send, $c_recv ) = $noise->split();
                 my $existing = $stream->can('_state') ? $stream->_state->{read_buffer} : '';
                 $stream->set_is_upgraded(1);
-                my $secure_stream = Libp2p::Protocol::Noise::SecureStream->new(
+                my $secure_stream = Libp2p::Security::Noise::SecureStream->new(
                     handle         => $stream->handle,
                     loop           => $host->io_utils->loop,
                     c_send         => $c_send,
@@ -187,7 +187,7 @@ class Libp2p::Protocol::Noise v0.0.1 {
 
                 # Transfer handle ownership safely
                 $stream->set_is_upgraded(1);
-                return Libp2p::Protocol::Noise::SecureStream->new(
+                return Libp2p::Security::Noise::SecureStream->new(
                     handle         => $stream->handle,
                     loop           => $host->io_utils->loop,
                     c_send         => $c_send,
@@ -200,14 +200,14 @@ class Libp2p::Protocol::Noise v0.0.1 {
 
     method _create_handshake_payload () {
         my $my_static = $host->crypto->static_x25519_pub_raw();
-        my $payload   = Libp2p::Protocol::Noise::HandshakePayload->new();
+        my $payload   = Libp2p::Security::Noise::HandshakePayload->new();
         $payload->set_identityKey( $host->crypto->public_key_raw() );
         $payload->set_identitySig( $host->crypto->sign( 'noise-libp2p-static-key:' . $my_static ) );
         return $payload->to_pb();
     }
 
     method _verify_payload ( $bin, $noise ) {
-        my $payload = Libp2p::Protocol::Noise::HandshakePayload->from_pb($bin);
+        my $payload = Libp2p::Security::Noise::HandshakePayload->from_pb($bin);
 
         # rs is the Remote Static key from the Noise state
         my $rs_obj        = $noise->handshake_state->rs;

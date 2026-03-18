@@ -3,21 +3,23 @@ use feature 'class';
 no warnings 'experimental::class';
 
 # Define DHT Protobuf messages
-class Libp2p::Protocol::DHT::Message::Record v0.0.1 : isa(Libp2p::ProtoBuf::Message) {
+class Libp2p::Routing::DHT::Message::Record v0.0.1 : isa(Libp2p::ProtoBuf::Message) {
     field $key          : param : reader : writer(set_key)   = undef;
     field $value        : param : reader : writer(set_value) = undef;
     field $timeReceived : param : reader : writer(set_time)  = undef;
     __PACKAGE__->pb_field( 1, 'key',          'bytes',  writer => 'set_key' );
     __PACKAGE__->pb_field( 2, 'value',        'bytes',  writer => 'set_value' );
     __PACKAGE__->pb_field( 5, 'timeReceived', 'string', writer => 'set_time' );
-} class Libp2p::Protocol::DHT::Message::Peer v0.0.1 : isa(Libp2p::ProtoBuf::Message) {
+};
+class Libp2p::Routing::DHT::Message::Peer v0.0.1 : isa(Libp2p::ProtoBuf::Message) {
     field $id    : param : reader : writer(set_id) = undef;
     field $addrs : param : reader : writer(set_addrs) //= [];
     field $connection : param : reader : writer(set_conn) = 0;
     __PACKAGE__->pb_field( 1, 'id',         'bytes', writer   => 'set_id' );
     __PACKAGE__->pb_field( 2, 'addrs',      'bytes', repeated => 1, writer => 'set_addrs' );
     __PACKAGE__->pb_field( 3, 'connection', 'enum',  writer   => 'set_conn' );
-} class Libp2p::Protocol::DHT::Message v0.0.1 : isa(Libp2p::ProtoBuf::Message) {
+};
+class Libp2p::Routing::DHT::Message v0.0.1 : isa(Libp2p::ProtoBuf::Message) {
     field $type            : param : reader : writer(set_type)   = undef;
     field $clusterLevelRaw : param : reader : writer(set_level)  = undef;
     field $key             : param : reader : writer(set_key)    = undef;
@@ -27,10 +29,11 @@ class Libp2p::Protocol::DHT::Message::Record v0.0.1 : isa(Libp2p::ProtoBuf::Mess
     __PACKAGE__->pb_field( 1, 'type',            'enum',    writer => 'set_type' );
     __PACKAGE__->pb_field( 2, 'clusterLevelRaw', 'int32',   writer => 'set_level' );
     __PACKAGE__->pb_field( 3, 'key',             'bytes',   writer => 'set_key' );
-    __PACKAGE__->pb_field( 4, 'record',          'message', class  => 'Libp2p::Protocol::DHT::Message::Record', writer => 'set_record' );
-    __PACKAGE__->pb_field( 5, 'closerPeers',   'message', class => 'Libp2p::Protocol::DHT::Message::Peer', repeated => 1, writer => 'set_closer' );
-    __PACKAGE__->pb_field( 6, 'providerPeers', 'message', class => 'Libp2p::Protocol::DHT::Message::Peer', repeated => 1, writer => 'set_provider' );
-} class Libp2p::Protocol::DHT v0.0.1 {
+    __PACKAGE__->pb_field( 4, 'record',          'message', class  => 'Libp2p::Routing::DHT::Message::Record', writer => 'set_record' );
+    __PACKAGE__->pb_field( 5, 'closerPeers',     'message', class => 'Libp2p::Routing::DHT::Message::Peer', repeated => 1, writer => 'set_closer' );
+    __PACKAGE__->pb_field( 6, 'providerPeers',   'message', class => 'Libp2p::Routing::DHT::Message::Peer', repeated => 1, writer => 'set_provider' );
+};
+class Libp2p::Routing::DHT v0.0.1 {
     use Libp2p::Future;
     use Algorithm::Kademlia;
     use Digest::SHA qw(sha256);
@@ -207,12 +210,12 @@ class Libp2p::Protocol::DHT::Message::Record v0.0.1 : isa(Libp2p::ProtoBuf::Mess
     method _send_rpc ( $peer, $type, $target_routing_bin ) {
         return $host->dial( $peer->{data}, PROTOCOL_ID )->then(
             sub ($ss) {
-                my $req = Libp2p::Protocol::DHT::Message->new( type => $type, key => $target_routing_bin );
+                my $req = Libp2p::Routing::DHT::Message->new( type => $type, key => $target_routing_bin );
                 return $ss->write_bin( $req->to_pb() )->then( sub { $ss->read_bin() } );
             }
         )->then(
             sub ($resp_data) {
-                my $msg = Libp2p::Protocol::DHT::Message->from_pb($resp_data);
+                my $msg = Libp2p::Routing::DHT::Message->from_pb($resp_data);
                 return Libp2p::Future->resolve(
                     {   closer    => [ map { { id => $_->id, addrs => [ ( $_->addrs // [] )->@* ] } } ( $msg->closerPeers   // [] )->@* ],
                         providers => [ map { { id => $_->id, addrs => [ ( $_->addrs // [] )->@* ] } } ( $msg->providerPeers // [] )->@* ]
@@ -225,14 +228,11 @@ class Libp2p::Protocol::DHT::Message::Record v0.0.1 : isa(Libp2p::ProtoBuf::Mess
     method _send_add_provider ( $peer, $key_bin ) {
         return $host->dial( $peer->{data}, PROTOCOL_ID )->then(
             sub ($ss) {
-                my $req = Libp2p::Protocol::DHT::Message->new(
+                my $req = Libp2p::Routing::DHT::Message->new(
                     type          => ADD_PROVIDER,
                     key           => $key_bin,
                     providerPeers => [
-                        Libp2p::Protocol::DHT::Message::Peer->new(
-                            id    => $host->peer_id->raw,
-                            addrs => [ map { $_->bytes } $host->listen_addrs->@* ]
-                        )
+                        Libp2p::Routing::DHT::Message::Peer->new( id => $host->peer_id->raw, addrs => [ map { $_->bytes } $host->listen_addrs->@* ] )
                     ]
                 );
                 return $ss->write_bin( $req->to_pb() );
@@ -243,11 +243,11 @@ class Libp2p::Protocol::DHT::Message::Record v0.0.1 : isa(Libp2p::ProtoBuf::Mess
     method handle_stream ($ss) {
         return $ss->read_bin()->then(
             sub ($data) {
-                my $msg         = Libp2p::Protocol::DHT::Message->from_pb($data);
+                my $msg         = Libp2p::Routing::DHT::Message->from_pb($data);
                 my $routing_key = $msg->key;
                 if ( $msg->type == FIND_NODE ) {
                     my @closest = $routing_table->find_closest( $routing_key, 20 );
-                    my $resp    = Libp2p::Protocol::DHT::Message->new(
+                    my $resp    = Libp2p::Routing::DHT::Message->new(
                         type        => FIND_NODE,
                         closerPeers => [
                             map {
@@ -263,7 +263,7 @@ class Libp2p::Protocol::DHT::Message::Record v0.0.1 : isa(Libp2p::ProtoBuf::Mess
                                             push @addrs, $ma->to_binary if $ma;
                                         }
                                     }
-                                    $peer_msg = Libp2p::Protocol::DHT::Message::Peer->new( id => $raw_id, addrs => \@addrs );
+                                    $peer_msg = Libp2p::Routing::DHT::Message::Peer->new( id => $raw_id, addrs => \@addrs );
                                 }
                                 catch ($e) { }
 
@@ -288,7 +288,7 @@ class Libp2p::Protocol::DHT::Message::Record v0.0.1 : isa(Libp2p::ProtoBuf::Mess
                         for my $pid_bin ( keys $providers{$routing_key}->%* ) {
                             if ( $providers{$routing_key}{$pid_bin}{expiry} > time() ) {
                                 push @provs,
-                                    Libp2p::Protocol::DHT::Message::Peer->new(
+                                    Libp2p::Routing::DHT::Message::Peer->new(
                                     id    => $pid_bin,
                                     addrs => [ ( $providers{$routing_key}{$pid_bin}{addrs} // [] )->@* ]
                                     );
@@ -298,7 +298,7 @@ class Libp2p::Protocol::DHT::Message::Record v0.0.1 : isa(Libp2p::ProtoBuf::Mess
                             }
                         }
                     }
-                    my $resp = Libp2p::Protocol::DHT::Message->new(
+                    my $resp = Libp2p::Routing::DHT::Message->new(
                         type          => GET_PROVIDERS,
                         providerPeers => \@provs,
                         closerPeers   => [
@@ -315,7 +315,7 @@ class Libp2p::Protocol::DHT::Message::Record v0.0.1 : isa(Libp2p::ProtoBuf::Mess
                                             push @addrs, $ma->to_binary if $ma;
                                         }
                                     }
-                                    $peer_msg = Libp2p::Protocol::DHT::Message::Peer->new( id => $raw_id, addrs => \@addrs );
+                                    $peer_msg = Libp2p::Routing::DHT::Message::Peer->new( id => $raw_id, addrs => \@addrs );
                                 }
                                 catch ($e) { }
 

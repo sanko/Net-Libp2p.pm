@@ -159,7 +159,7 @@
          "version" : "v0.0.1"
       },
       "Libp2p::Protocol::DHT::Message::Record" : {
-         "file" : "lib/Libp2p/Protocol/DHT.pm",
+         "file" : "lib/Libp2p/Routing/DHT.pm",
          "version" : "v0.0.1"
       },
       "Libp2p::Protocol::Identify" : {
@@ -170,23 +170,23 @@
          "file" : "lib/Libp2p/Protocol/Identify.pm"
       },
       "Libp2p::Protocol::Noise" : {
-         "file" : "lib/Libp2p/Protocol/Noise.pm",
+         "file" : "lib/Libp2p/Security/Noise.pm",
          "version" : "v0.0.1"
       },
       "Libp2p::Protocol::Noise::HandshakePayload" : {
-         "file" : "lib/Libp2p/Protocol/Noise.pm",
+         "file" : "lib/Libp2p/Security/Noise.pm",
          "version" : "v0.0.1"
       },
       "Libp2p::Protocol::Noise::SecureStream" : {
-         "file" : "lib/Libp2p/Protocol/Noise.pm",
+         "file" : "lib/Libp2p/Security/Noise.pm",
          "version" : "v0.0.1"
       },
       "Libp2p::Protocol::TLS::ASN1" : {
-         "file" : "lib/Libp2p/Protocol/TLS.pm",
+         "file" : "lib/Libp2p/Security/TLS.pm",
          "version" : "v0.0.1"
       },
       "Libp2p::Protocol::TLS::SecureStream" : {
-         "file" : "lib/Libp2p/Protocol/TLS.pm",
+         "file" : "lib/Libp2p/Security/TLS.pm",
          "version" : "v0.0.1"
       },
       "Libp2p::ResourceManager" : {

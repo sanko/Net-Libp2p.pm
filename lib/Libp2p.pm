@@ -4,15 +4,15 @@ no warnings 'experimental::class';
 class Libp2p v0.1.0 {
     use Libp2p::Host;
     use Libp2p::Crypto;
-    use Libp2p::Protocol::Noise;
-    use Libp2p::Protocol::TLS;
+    use Libp2p::Security::Noise;
+    use Libp2p::Security::TLS;
     use Libp2p::Protocol::Identify;
 
     sub new_node ( $class, %args ) {
         my $crypto = Libp2p::Crypto->new( type => ( $args{key_type} // 'Ed25519' ) );
         my $host   = Libp2p::Host->new( port => ( $args{port} // 4001 ), address => ( $args{address} // '0.0.0.0' ), crypto => $crypto );
-        Libp2p::Protocol::Noise->new( host => $host )->register();
-        Libp2p::Protocol::TLS->new( host => $host )->register();
+        Libp2p::Security::Noise->new( host => $host )->register();
+        Libp2p::Security::TLS->new( host => $host )->register();
         Libp2p::Protocol::Identify->new( host => $host )->register();
         return $host;
     }
@@ -62,8 +62,8 @@ class Libp2p v0.0.1 {
         $identify->register();
         #
         if ($enable_dht) {
-            use Libp2p::Protocol::DHT;
-            $dht = Libp2p::Protocol::DHT->new( host => $host );
+            use Libp2p::Routing::DHT;
+            $dht = Libp2p::Routing::DHT->new( host => $host );
             $dht->register();
         }
         if ($enable_relay) {
@@ -76,13 +76,13 @@ class Libp2p v0.0.1 {
 
         # Security transports
         if ($enable_noise) {
-            require Libp2p::Protocol::Noise;
-            $noise = Libp2p::Protocol::Noise->new( host => $host );
+            require Libp2p::Security::Noise;
+            $noise = Libp2p::Security::Noise->new( host => $host );
             $noise->register();
         }
         if ($enable_tls) {
-            require Libp2p::Protocol::TLS;
-            $tls = Libp2p::Protocol::TLS->new( host => $host );
+            require Libp2p::Security::TLS;
+            $tls = Libp2p::Security::TLS->new( host => $host );
             $tls->register();
         }
     }

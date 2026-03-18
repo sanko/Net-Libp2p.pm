@@ -5,7 +5,7 @@ no warnings 'experimental::class';
 use blib;
 use Libp2p::Host;
 use Libp2p::Crypto;
-use Libp2p::Protocol::DHT;
+use Libp2p::Routing::DHT;
 use Libp2p::Loop;
 use Digest::SHA qw[sha256];
 #
@@ -17,15 +17,15 @@ subtest 'DHT FIND_PEER' => sub {
     # Setup 3 nodes
     my $c1 = Libp2p::Crypto->new;
     my $h1 = Libp2p::Host->new( port => 0, address => '127.0.0.1', crypto => $c1 );
-    my $d1 = Libp2p::Protocol::DHT->new( host => $h1 );
+    my $d1 = Libp2p::Routing::DHT->new( host => $h1 );
     $d1->register();
     my $c2 = Libp2p::Crypto->new;
     my $h2 = Libp2p::Host->new( port => 0, address => '127.0.0.1', crypto => $c2 );
-    my $d2 = Libp2p::Protocol::DHT->new( host => $h2 );
+    my $d2 = Libp2p::Routing::DHT->new( host => $h2 );
     $d2->register();
     my $c3 = Libp2p::Crypto->new;
     my $h3 = Libp2p::Host->new( port => 0, address => '127.0.0.1', crypto => $c3 );
-    my $d3 = Libp2p::Protocol::DHT->new( host => $h3 );
+    my $d3 = Libp2p::Routing::DHT->new( host => $h3 );
     $d3->register();
     my $pid1  = $h1->peer_id;
     my $pid2  = $h2->peer_id;

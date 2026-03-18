@@ -4,7 +4,7 @@
 
 =head1 NAME
 
-Net::Libp2p::ProtoBuf - Lightweight Protocol Buffers implementation for libp2p
+Libp2p::ProtoBuf - Lightweight Protocol Buffers implementation for libp2p
 
 =head1 SYNOPSIS
 

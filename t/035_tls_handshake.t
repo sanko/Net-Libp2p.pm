@@ -10,7 +10,7 @@ use Libp2p::Loop;
 BEGIN {
     try {
         require IO::Socket::SSL;
-        require Libp2p::Protocol::TLS;
+        require Libp2p::Security::TLS;
     }
     catch ($e) { skip_all 'IO::Socket::SSL is missing' }
 }
@@ -21,12 +21,12 @@ my $loop = Libp2p::Loop->get;
 subtest 'TLS Handshake' => sub {
     my $c1 = Libp2p::Crypto->new;
     my $h1 = Libp2p::Host->new( port => 0, address => '127.0.0.1', crypto => $c1 );
-    my $n1 = Libp2p::Protocol::TLS->new( host => $h1 );
+    my $n1 = Libp2p::Security::TLS->new( host => $h1 );
     $n1->register();
     #
     my $c2 = Libp2p::Crypto->new;
     my $h2 = Libp2p::Host->new( port => 0, address => '127.0.0.1', crypto => $c2 );
-    my $n2 = Libp2p::Protocol::TLS->new( host => $h2 );
+    my $n2 = Libp2p::Security::TLS->new( host => $h2 );
     $n2->register();
     #
     $h1->peer_store->add_addr( $h2->peer_id->to_string, '/ip4/127.0.0.1/tcp/' . $h2->port );
@@ -44,7 +44,7 @@ subtest 'TLS Handshake' => sub {
     my $secure_stream = $loop->await($handshake_f);
     #
     ok $secure_stream, 'TLS handshake completed';
-    isa_ok $secure_stream, ['Libp2p::Protocol::TLS::SecureStream'];
+    isa_ok $secure_stream, ['Libp2p::Security::TLS::SecureStream'];
 };
 #
 done_testing;

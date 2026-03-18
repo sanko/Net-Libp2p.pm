@@ -2,7 +2,7 @@ use v5.40;
 use feature 'class';
 no warnings 'experimental::class';
 #
-class Libp2p::Protocol::TLS::ASN1 v0.0.1 {
+class Libp2p::Security::TLS::ASN1 v0.0.1 {
     method encode_octet_string ($data) {
         pack( 'C', 0x04 ) . $self->_encode_length( length($data) ) . $data;
     }
@@ -22,7 +22,7 @@ class Libp2p::Protocol::TLS::ASN1 v0.0.1 {
         pack( 'C', 0x80 | length($bin) ) . $bin;
     }
 };
-class Libp2p::Protocol::TLS::SecureStream v0.0.1 : isa(Libp2p::Stream) {
+class Libp2p::Security::TLS::SecureStream v0.0.1 : isa(Libp2p::Stream) {
     use Scalar::Util qw[blessed];
     use Errno qw[EAGAIN EWOULDBLOCK];
     field $initial_buffer : param //= '';
@@ -64,7 +64,7 @@ class Libp2p::Protocol::TLS::SecureStream v0.0.1 : isa(Libp2p::Stream) {
             $self->close();
         }
     }
-} class Libp2p::Protocol::TLS v0.0.1 {
+} class Libp2p::Security::TLS v0.0.1 {
     use Libp2p::Future;
     use IO::Socket::SSL;
     use Net::SSLeay;
@@ -124,7 +124,7 @@ class Libp2p::Protocol::TLS::SecureStream v0.0.1 : isa(Libp2p::Stream) {
             # Clear handshake IO handlers
             $loop->remove_read_handler($ssl);
             $loop->remove_write_handler($ssl);
-            my $secure_stream = Libp2p::Protocol::TLS::SecureStream->new( handle => $ssl, loop => $loop, initial_buffer => $initial_data );
+            my $secure_stream = Libp2p::Security::TLS::SecureStream->new( handle => $ssl, loop => $loop, initial_buffer => $initial_data );
             $f->done($secure_stream);
             return;
         }
@@ -168,7 +168,7 @@ class Libp2p::Protocol::TLS::SecureStream v0.0.1 : isa(Libp2p::Stream) {
         my $spki_der = $pk->export_key_der('public_x509');
 
         # Create the libp2p extension: ASN.1 Sequence [PublicKey, Signature]
-        my $asn1     = Libp2p::Protocol::TLS::ASN1->new;
+        my $asn1     = Libp2p::Security::TLS::ASN1->new;
         my $payload  = 'libp2p-tls-handshake:' . $spki_der;
         my $sig      = $host->crypto->sign($payload);
         my $ext_data = $asn1->encode_sequence( $asn1->encode_octet_string( $host->crypto->public_key_raw() ), $asn1->encode_octet_string($sig) );
