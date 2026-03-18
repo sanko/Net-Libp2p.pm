@@ -3,25 +3,21 @@ use feature 'class';
 no warnings 'experimental::class';
 
 # Define DHT Protobuf messages
-class Libp2p::Protocol::DHT::Message::Record : isa(Libp2p::ProtoBuf::Message) {
+class Libp2p::Protocol::DHT::Message::Record v0.0.1 : isa(Libp2p::ProtoBuf::Message) {
     field $key          : param : reader : writer(set_key)   = undef;
     field $value        : param : reader : writer(set_value) = undef;
     field $timeReceived : param : reader : writer(set_time)  = undef;
     __PACKAGE__->pb_field( 1, 'key',          'bytes',  writer => 'set_key' );
     __PACKAGE__->pb_field( 2, 'value',        'bytes',  writer => 'set_value' );
     __PACKAGE__->pb_field( 5, 'timeReceived', 'string', writer => 'set_time' );
-}
-
-class Libp2p::Protocol::DHT::Message::Peer : isa(Libp2p::ProtoBuf::Message) {
+} class Libp2p::Protocol::DHT::Message::Peer v0.0.1 : isa(Libp2p::ProtoBuf::Message) {
     field $id    : param : reader : writer(set_id) = undef;
     field $addrs : param : reader : writer(set_addrs) //= [];
     field $connection : param : reader : writer(set_conn) = 0;
     __PACKAGE__->pb_field( 1, 'id',         'bytes', writer   => 'set_id' );
     __PACKAGE__->pb_field( 2, 'addrs',      'bytes', repeated => 1, writer => 'set_addrs' );
     __PACKAGE__->pb_field( 3, 'connection', 'enum',  writer   => 'set_conn' );
-}
-
-class Libp2p::Protocol::DHT::Message : isa(Libp2p::ProtoBuf::Message) {
+} class Libp2p::Protocol::DHT::Message v0.0.1 : isa(Libp2p::ProtoBuf::Message) {
     field $type            : param : reader : writer(set_type)   = undef;
     field $clusterLevelRaw : param : reader : writer(set_level)  = undef;
     field $key             : param : reader : writer(set_key)    = undef;
@@ -34,8 +30,7 @@ class Libp2p::Protocol::DHT::Message : isa(Libp2p::ProtoBuf::Message) {
     __PACKAGE__->pb_field( 4, 'record',          'message', class  => 'Libp2p::Protocol::DHT::Message::Record', writer => 'set_record' );
     __PACKAGE__->pb_field( 5, 'closerPeers',   'message', class => 'Libp2p::Protocol::DHT::Message::Peer', repeated => 1, writer => 'set_closer' );
     __PACKAGE__->pb_field( 6, 'providerPeers', 'message', class => 'Libp2p::Protocol::DHT::Message::Peer', repeated => 1, writer => 'set_provider' );
-}
-class Libp2p::Protocol::DHT v0.2.0 {
+} class Libp2p::Protocol::DHT v0.0.1 {
     use Libp2p::Future;
     use Algorithm::Kademlia;
     use Digest::SHA qw(sha256);

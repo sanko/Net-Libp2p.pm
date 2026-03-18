@@ -34,32 +34,25 @@ class Libp2p::Protocol::AutoNAT::V1::Message : isa(Libp2p::ProtoBuf::Message) {
 }
 
 # --- AutoNAT v2 Protobuf Messages ---
-class Libp2p::Protocol::AutoNAT::V2::Message::DialRequest : isa(Libp2p::ProtoBuf::Message) {
+class Libp2p::Protocol::AutoNAT::V2::Message::DialRequest v0.0.1 : isa(Libp2p::ProtoBuf::Message) {
     field $addrs : param : reader : writer(set_addrs) //= [];
     field $nonce : param : reader : writer(set_nonce) = undef;
     __PACKAGE__->pb_field( 1, 'addrs', 'bytes', repeated => 1, writer => 'set_addrs' );
     __PACKAGE__->pb_field( 2, 'nonce', 'uint64', writer => 'set_nonce' );
-}
-
-class Libp2p::Protocol::AutoNAT::V2::Message::DialResponse : isa(Libp2p::Protocol::AutoNAT::V2::Message::DialRequest) {
+} class Libp2p::Protocol::AutoNAT::V2::Message::DialResponse v0.0.1 : isa(Libp2p::Protocol::AutoNAT::V2::Message::DialRequest) {
     field $status   : param : reader : writer(set_status) = undef;
     field $addr_idx : param : reader : writer(set_idx)    = undef;
     __PACKAGE__->pb_field( 1, 'status',   'enum',   writer => 'set_status' );
     __PACKAGE__->pb_field( 2, 'addr_idx', 'uint32', writer => 'set_idx' );
-}
-
-class Libp2p::Protocol::AutoNAT::V2::Message::DialBack : isa(Libp2p::ProtoBuf::Message) {
+} class Libp2p::Protocol::AutoNAT::V2::Message::DialBack v0.0.1 : isa(Libp2p::ProtoBuf::Message) {
     field $nonce : param : reader : writer(set_nonce) = undef;
     __PACKAGE__->pb_field( 1, 'nonce', 'uint64', writer => 'set_nonce' );
-}
-
-class Libp2p::Protocol::AutoNAT::V2::Message::DialBackResponse : isa(Libp2p::ProtoBuf::Message) {
+} class Libp2p::Protocol::AutoNAT::V2::Message::DialBackResponse v0.0.1 : isa(Libp2p::ProtoBuf::Message) {
     field $status : param : reader : writer(set_status) = undef;
     __PACKAGE__->pb_field( 1, 'status', 'enum', writer => 'set_status' );
-}
-
-# --- Main AutoNAT Protocol Class ---
-class Libp2p::Protocol::AutoNAT v0.1.0 {
+    }
+    #
+    class Libp2p::Protocol::AutoNAT v0.0.1 {
     use Libp2p::Future;
     use Libp2p::Multiaddr;
     use constant {
@@ -85,7 +78,6 @@ class Libp2p::Protocol::AutoNAT v0.1.0 {
         $host->set_handler( "/multistream/1.0.0", sub ($ss) { $ss->close(); } );
     }
 
-    # --- v1 Logic ---
     method handle_v1 ($ss) {
         return $ss->read_bin()->then(
             sub ($data) {
@@ -120,8 +112,7 @@ class Libp2p::Protocol::AutoNAT v0.1.0 {
         my $msg = Libp2p::Protocol::AutoNAT::V1::Message->new( type => 2, response => $resp );    # 2 = RESPONSE
         return $ss->write_bin( $msg->to_pb() );
     }
-
-    # --- v2 Logic ---
+    #
     method handle_v2 ($ss) {
         return $ss->read_bin()->then(
             sub ($data) {
@@ -218,8 +209,7 @@ class Libp2p::Protocol::AutoNAT v0.1.0 {
         $try_next->();
         return $f;
     }
-
-    # --- Client Methods ---
+    #
     method check_reachability_v1 ($peer_addr) {
         return $host->dial( $peer_addr, PROTOCOL_V1 )->then(
             sub ($ss) {
@@ -264,4 +254,6 @@ class Libp2p::Protocol::AutoNAT v0.1.0 {
             }
         );
     }
-} 1;
+    };
+#
+1;

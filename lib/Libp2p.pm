@@ -1,22 +1,42 @@
 use v5.40;
 use feature 'class';
 no warnings 'experimental::class';
+class Libp2p v0.1.0 {
+    use Libp2p::Host;
+    use Libp2p::Crypto;
+    use Libp2p::Protocol::Noise;
+    use Libp2p::Protocol::TLS;
+    use Libp2p::Protocol::Identify;
+
+    sub new_node ( $class, %args ) {
+        my $crypto = Libp2p::Crypto->new( type => ( $args{key_type} // 'Ed25519' ) );
+        my $host   = Libp2p::Host->new( port => ( $args{port} // 4001 ), address => ( $args{address} // '0.0.0.0' ), crypto => $crypto );
+        Libp2p::Protocol::Noise->new( host => $host )->register();
+        Libp2p::Protocol::TLS->new( host => $host )->register();
+        Libp2p::Protocol::Identify->new( host => $host )->register();
+        return $host;
+    }
+} 1;
+__END__
+use v5.40;
+use feature 'class';
+no warnings 'experimental::class';
 #
-class Net::Libp2p v0.0.1 {
-    use Net::Libp2p::Host;
-    use Net::Libp2p::Crypto;
-    use Net::Libp2p::ResourceManager;
-    use Net::Libp2p::PeerID;
-    use Net::Libp2p::Multiaddr;
-    use Net::Libp2p::Protocol::Ping;
-    use Net::Libp2p::Protocol::Identify;
-    use Net::Libp2p::Discovery::mDNS;
+class Libp2p v0.0.1 {
+    use Libp2p::Host;
+    use Libp2p::Crypto;
+    use Libp2p::ResourceManager;
+    use Libp2p::PeerID;
+    use Libp2p::Multiaddr;
+    #~ use Libp2p::Protocol::Ping;
+     use Libp2p::Protocol::Identify;
+    #~ use Libp2p::Discovery::mDNS;
     #
     # Configuration params
     field $port         : param //= 4001;
     field $address      : param //= '0.0.0.0';
     field $enable_dht   : param //= 1;
-    field $enable_mdns  : param //= 1;
+    field $enable_mdns  : param //= 0;
     field $enable_relay : param //= 1;
     field $enable_noise : param //= 1;
     field $enable_tls   : param //= 0;
@@ -24,31 +44,34 @@ class Net::Libp2p v0.0.1 {
     #
     field $host  : reader;
     field $dht   : reader;
-    field $mdns  : reader = Net::Libp2p::Discovery::mDNS->new( host => $host ) if $enable_mdns;
+    field $mdns  : reader = $enable_mdns ? Libp2p::Discovery::mDNS->new( host => $host ) : ();
     field $noise : reader;
     field $tls   : reader;
     #
     ADJUST {
         my $crypto = Libp2p::Crypto->new( type => $key_type );
-        my $rm     = Net::Libp2p::ResourceManager->new();
-        $host = Net::Libp2p::Host->new( port => $port, address => $address, crypto => $crypto, resource_manager => $rm );
+        my $rm     = Libp2p::ResourceManager->new();
+        $host = Libp2p::Host->new( port => $port, address => $address, crypto => $crypto, resource_manager => $rm );
 
         # Register default protocols
-        if my $ping = Net::Libp2p::Protocol::Ping->new( host => $host );
-        $ping->register();
-        my $id_proto = Net::Libp2p::Protocol::Identify->new( host => $host );
+          #~ my $ping = Libp2p::Protocol::Ping->new( host => $host );
+        #~ $ping->register();
+        my $id_proto = Libp2p::Protocol::Identify->new( host => $host );
         $id_proto->register();
+        my $identify = Libp2p::Protocol::Identify->new(host => $host);
+        $identify->register();
+        #
         if ($enable_dht) {
-            use Net::Libp2p::Protocol::DHT;
-            $dht = Net::Libp2p::Protocol::DHT->new( host => $host );
+            use Libp2p::Protocol::DHT;
+            $dht = Libp2p::Protocol::DHT->new( host => $host );
             $dht->register();
         }
         if ($enable_relay) {
 
             # Client support for Circuit Relay V2 (Hop/Stop)
-            require Net::Libp2p::Protocol::CircuitRelayV2;
-            my $relay = Net::Libp2p::Protocol::CircuitRelayV2->new( host => $host );
-            $relay->register();
+            #~ require Libp2p::Protocol::CircuitRelayV2;
+            #~ my $relay = Libp2p::Protocol::CircuitRelayV2->new( host => $host );
+            #~ $relay->register();
         }
 
         # Security transports

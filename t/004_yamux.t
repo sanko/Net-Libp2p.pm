@@ -1,7 +1,5 @@
 use Test2::V0;
-use lib '../lib';
-
-#~ use blib;
+use blib;
 use Libp2p::Muxer::Yamux;
 #
 subtest 'Yamux Header' => sub {

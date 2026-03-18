@@ -1,5 +1,7 @@
 use Test2::V0;
-use blib;
+
+#~ use blib;
+use lib '../lib';
 use Libp2p::Crypto;
 use Libp2p::PeerID;
 #

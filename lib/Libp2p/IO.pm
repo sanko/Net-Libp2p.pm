@@ -2,7 +2,7 @@ use v5.40;
 use feature 'class';
 no warnings 'experimental::class';
 #
-class Libp2p::IO v0.2.0 {
+class Libp2p::IO v0.0.1 {
     use warnings::register;
     use Libp2p::Loop;
     use Libp2p::Future;

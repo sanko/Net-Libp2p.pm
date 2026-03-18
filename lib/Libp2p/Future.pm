@@ -2,7 +2,7 @@ use v5.40;
 use feature 'class';
 no warnings 'experimental::class';
 #
-class Libp2p::Future v0.1.0 {
+class Libp2p::Future v0.0.1 {
     use warnings::register;
     field $state : reader //= 'pending';    # 'pending', 'ready', 'failed'
     field @results;

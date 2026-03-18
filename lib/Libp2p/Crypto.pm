@@ -1,19 +1,15 @@
 use v5.40;
 use feature 'class';
 no warnings 'experimental::class';
-#
-# Define the Protobuf Message structure for Public Keys
+
 package Libp2p::Crypto::PublicKeyMsg {
     use feature 'class';
-    no warnings 'experimental::class';
 
-    class Libp2p::Crypto::PublicKeyMsg {
-        field $Type : reader : writer = undef;
-        field $Data : reader : writer = undef;
-
-        method _pb_fields () {
-            return ( 1 => { name => 'Type', type => 'enum' }, 2 => { name => 'Data', type => 'bytes' } );
-        }
+    class Libp2p::Crypto::PublicKeyMsg : isa(Libp2p::ProtoBuf::Message) {
+        field $Type : reader : writer(set_Type) = undef;
+        field $Data : reader : writer(set_Data) = undef;
+        __PACKAGE__->pb_field( 1, 'Type', 'enum',  writer => 'set_Type' );
+        __PACKAGE__->pb_field( 2, 'Data', 'bytes', writer => 'set_Data' );
     }
 }
 
@@ -23,110 +19,82 @@ class Libp2p::Crypto {
     use Crypt::PK::RSA;
     use Crypt::PK::ECC;
     use Libp2p::PeerID;
-    use Libp2p::ProtoBuf;
-    use Libp2p::Utils qw[encode_varint decode_varint];
-    use Digest::SHA   qw[sha256];
-    #
     field $key  : reader;
     field $type : param : reader //= 'Ed25519';
     field $static_x25519 : reader = Crypt::PK::X25519->new();
-    #
     ADJUST {
-        # Key generation based on type
-        if ( $type eq 'Ed25519' ) {
-            $key = Crypt::PK::Ed25519->new();
-            $key->generate_key();
-        }
-        elsif ( $type eq 'RSA' ) {
-            $key = Crypt::PK::RSA->new();
-
-            # 1024 is sufficient for testing and faster
-            $key->generate_key(1024);
-        }
-        elsif ( $type eq 'Secp256k1' ) {
-            $key = Crypt::PK::ECC->new();
-            $key->generate_key('secp256k1');
-        }
-        else {
-            die "Unsupported key type: $type";
-        }
-
-        # Noise always uses X25519 for ephemeral/static DH, regardless of identity key
+        if    ( $type eq 'Ed25519' )   { $key = Crypt::PK::Ed25519->new(); $key->generate_key(); }
+        elsif ( $type eq 'RSA' )       { $key = Crypt::PK::RSA->new();     $key->generate_key(256); }           # 256 bytes = 2048 bits
+        elsif ( $type eq 'Secp256k1' ) { $key = Crypt::PK::ECC->new();     $key->generate_key('secp256k1'); }
         $static_x25519->generate_key();
     }
 
     method public_key_raw () {
-
-        # libp2p uses a Protobuf 'PublicKey' message:
-        # message PublicKey {
-        #   required KeyType Type = 1;
-        #   required bytes Data = 2;
-        # }
-        # enum KeyType { RSA=0; Ed25519=1; Secp256k1=2; ECDSA=3; }
-        my $raw_key;
-        my $key_type_val;
-        if ( $type eq 'Ed25519' ) {
-            $key_type_val = 1;
-            $raw_key      = $key->export_key_raw('public');
-        }
-        elsif ( $type eq 'RSA' ) {
-            $key_type_val = 0;
-            $raw_key      = $key->export_key_der('public');    # DER/PKCS#1
-        }
-        elsif ( $type eq 'Secp256k1' ) {
-            $key_type_val = 2;
-            $raw_key      = $key->export_key_raw('public');
-        }
-
-        # Encode as Protobuf manually (could also use the class, but this is fast)
-        my $pb = pack( "C", ( 1 << 3 ) | 0 ) . encode_varint($key_type_val);
-        $pb .= pack( "C", ( 2 << 3 ) | 2 ) . encode_varint( length($raw_key) ) . $raw_key;
-        return $pb;
+        my ( $raw, $t_val );
+        if    ( $type eq 'Ed25519' )   { $t_val = 1; $raw = $key->export_key_raw('public'); }
+        elsif ( $type eq 'RSA' )       { $t_val = 0; $raw = $key->export_key_der('public'); }
+        elsif ( $type eq 'Secp256k1' ) { $t_val = 2; $raw = $key->export_key_raw('public'); }
+        my $msg = Libp2p::Crypto::PublicKeyMsg->new();
+        $msg->set_Type($t_val);
+        $msg->set_Data($raw);
+        return $msg->to_pb();
     }
 
     method sign ($data) {
-        $key->sign_message($data);
+        if ( $type eq 'RSA' ) {
+            return $key->sign_message( $data, 'SHA256', 'v1.5' );
+        }
+        return $key->sign_message($data);
     }
 
-    sub peer_id_from_public_key ( $class, $pk_pb ) {
-        Libp2p::PeerID->from_public_key($pk_pb);
-    }
+    method verify ( $data, $sig, $pub_key_pb //= undef ) {
+        if ($pub_key_pb) {
+            my $msg = Libp2p::Crypto::PublicKeyMsg->from_pb($pub_key_pb);
+            my $t   = $msg->Type // 0;
+            my $d   = $msg->Data;
+            return 0 unless defined $d;
 
-    method verify ( $data, $sig, $pub_key_raw_bytes //= undef ) {
-        if ($pub_key_raw_bytes) {
-
-            # Decode the protobuf message to get the inner key
-            my $pb_engine = Libp2p::ProtoBuf->new();
-            my $msg       = $pb_engine->decode( 'Libp2p::Crypto::PublicKeyMsg', $pub_key_raw_bytes );
-            my $k_type    = $msg->Type;
-            my $k_data    = $msg->Data;                                                                 # This is the raw key bytes
-
-            #~ die "Invalid PublicKey Protobuf: Missing Type or Data" unless defined $k_type && defined $k_data;
-            # TODO - These types should be constants somewhere
-            # Instantiate the correct CryptX verifier
+            # Force binary mode
+            utf8::downgrade( $data, 1 );
+            utf8::downgrade( $sig,  1 );
+            utf8::downgrade( $d,    1 );
             my $vkey;
-            if ( $k_type == 1 ) {    # Ed25519
+            if ( $t == 0 ) {    # RSA
+                $vkey = Crypt::PK::RSA->new();
+
+                # IMPORTANT: Pass \$d (reference) to avoid "Invalid \0 in pathname"
+                eval { $vkey->import_key( \$d ) };
+                if ($@) {
+                    warn "[DEBUG] RSA Key Import Failed: $@" if $ENV{DEBUG};
+                    return 0;
+                }
+
+                # libp2p uses PKCS1 v1.5 padding and SHA256 for RSA identities
+                # Use eval because verify_message can croak on malformed signatures
+                my $result = eval { $vkey->verify_message( $sig, $data, 'SHA256', 'v1.5' ) };
+                return $result // 0;
+            }
+            elsif ( $t == 1 ) {    # Ed25519
                 $vkey = Crypt::PK::Ed25519->new();
-                $vkey->import_key_raw( $k_data, 'public' );
+                eval { $vkey->import_key_raw( $d, 'public' ) };
+                return 0 if $@;
+                return eval { $vkey->verify_message( $sig, $data ) } // 0;
             }
-            elsif ( $k_type == 0 ) {    # RSA (DER format, new(\$data) works)
-                $vkey = Crypt::PK::RSA->new( \$k_data );
-            }
-            elsif ( $k_type == 2 ) {    # Secp256k1
+            elsif ( $t == 2 ) {    # Secp256k1
                 $vkey = Crypt::PK::ECC->new();
-                $vkey->import_key_raw( $k_data, 'public', 'secp256k1' );
+                eval { $vkey->import_key_raw( $d, 'public', 'secp256k1' ) };
+                return 0 if $@;
+                return eval { $vkey->verify_message( $sig, $data ) } // 0;
             }
-            else {
-                die "Unsupported or unknown KeyType ($k_type) during verification.";
-            }
-            return $vkey->verify_message( $sig, $data );
         }
 
-        # Self-verification fallback
-        return $key->verify_message( $sig, $data );
+        # Fallback for self-verification
+        if ( $type eq 'RSA' ) {
+            return eval { $key->verify_message( $sig, $data, 'SHA256', 'v1.5' ) } // 0;
+        }
+        return eval { $key->verify_message( $sig, $data ) } // 0;
     }
     method static_x25519_pub_raw () { $static_x25519->export_key_raw('public') }
     method peer_id ()               { Libp2p::PeerID->from_public_key( $self->public_key_raw() ) }
-};
-#
+}
 1;

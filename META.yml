@@ -38,6 +38,9 @@ optional_features:
     requires:
       Net::DNS: '0'
 provides:
+  Libp2p:
+    file: lib/Libp2p.pm
+    version: v0.1.0
   Libp2p::ConnectionManager:
     file: lib/Libp2p/ConnectionManager.pm
   Libp2p::Crypto:
@@ -46,18 +49,21 @@ provides:
     file: lib/Libp2p/Crypto.pm
   Libp2p::Future:
     file: lib/Libp2p/Future.pm
-    version: v0.1.0
+    version: v0.0.1
   Libp2p::Host:
     file: lib/Libp2p/Host.pm
     version: v0.0.1
   Libp2p::IO:
     file: lib/Libp2p/IO.pm
-    version: v0.2.0
+    version: v0.0.1
   Libp2p::Loop:
     file: lib/Libp2p/Loop.pm
-    version: v0.1.0
+    version: v0.0.1
   Libp2p::Multiaddr:
     file: lib/Libp2p/Multiaddr.pm
+    version: v0.0.1
+  Libp2p::Muxer::Yamux:
+    file: lib/Libp2p/Muxer/Yamux.pm
     version: v0.0.1
   Libp2p::Muxer::Yamux::Stream:
     file: lib/Libp2p/Muxer/Yamux.pm
@@ -75,7 +81,7 @@ provides:
     version: v0.0.1
   Libp2p::Protocol::AutoNAT:
     file: lib/Libp2p/Protocol/AutoNAT.pm
-    version: v0.1.0
+    version: v0.0.1
   Libp2p::Protocol::AutoNAT::V1::Message:
     file: lib/Libp2p/Protocol/AutoNAT.pm
   Libp2p::Protocol::AutoNAT::V1::Message::Dial:
@@ -84,35 +90,25 @@ provides:
     file: lib/Libp2p/Protocol/AutoNAT.pm
   Libp2p::Protocol::AutoNAT::V1::Message::Response:
     file: lib/Libp2p/Protocol/AutoNAT.pm
-  Libp2p::Protocol::AutoNAT::V2::Message::DialBack:
-    file: lib/Libp2p/Protocol/AutoNAT.pm
-  Libp2p::Protocol::AutoNAT::V2::Message::DialBackResponse:
-    file: lib/Libp2p/Protocol/AutoNAT.pm
   Libp2p::Protocol::AutoNAT::V2::Message::DialRequest:
     file: lib/Libp2p/Protocol/AutoNAT.pm
-  Libp2p::Protocol::AutoNAT::V2::Message::DialResponse:
-    file: lib/Libp2p/Protocol/AutoNAT.pm
-  Libp2p::Protocol::DHT:
-    file: lib/Libp2p/Protocol/DHT.pm
-    version: v0.2.0
-  Libp2p::Protocol::DHT::Message:
-    file: lib/Libp2p/Protocol/DHT.pm
-  Libp2p::Protocol::DHT::Message::Peer:
-    file: lib/Libp2p/Protocol/DHT.pm
+    version: v0.0.1
   Libp2p::Protocol::DHT::Message::Record:
     file: lib/Libp2p/Protocol/DHT.pm
+    version: v0.0.1
   Libp2p::Protocol::Identify:
     file: lib/Libp2p/Protocol/Identify.pm
-    version: v0.1.0
+    version: v0.0.1
   Libp2p::Protocol::Identify::Message:
-    file: lib/Libp2p/Protocol/Identify/Message.pm
+    file: lib/Libp2p/Protocol/Identify.pm
   Libp2p::Protocol::Noise:
     file: lib/Libp2p/Protocol/Noise.pm
     version: v0.0.1
   Libp2p::Protocol::Noise::HandshakePayload:
     file: lib/Libp2p/Protocol/Noise.pm
+    version: v0.0.1
   Libp2p::Protocol::Noise::SecureStream:
-    file: lib/Libp2p/Protocol/Noise/SecureStream.pm
+    file: lib/Libp2p/Protocol/Noise.pm
     version: v0.0.1
   Libp2p::Protocol::TLS::ASN1:
     file: lib/Libp2p/Protocol/TLS.pm
@@ -122,15 +118,12 @@ provides:
     version: v0.0.1
   Libp2p::ResourceManager:
     file: lib/Libp2p/ResourceManager.pm
-    version: v0.1.0
+    version: v0.0.1
   Libp2p::Stream:
     file: lib/Libp2p/Stream.pm
-    version: v0.2.0
+    version: v0.0.1
   Libp2p::Utils:
     file: lib/Libp2p/Utils.pm
-    version: v0.0.1
-  Net::Libp2p:
-    file: lib/Libp2p.pm
     version: v0.0.1
 recommends:
   IO::Socket::SSL: '0'
@@ -149,7 +142,7 @@ resources:
   homepage: https://github.com/sanko/Net-Libp2p.pm
   license: http://www.perlfoundation.org/artistic_license_2_0
   repository: git://github.com/sanko/Net-Libp2p.pm.git
-version: v0.0.1
+version: v0.1.0
 x_custom_builder: 0
 x_help_wanted:
   - Tester

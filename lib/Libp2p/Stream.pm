@@ -3,7 +3,7 @@ use feature 'class';
 no warnings 'experimental::class';
 use warnings::register;
 #
-class Libp2p::Stream v0.2.0 {
+class Libp2p::Stream v0.0.1 {
     use Libp2p::Utils qw[decode_varint encode_varint];
     use Libp2p::Future;
     use Libp2p::Loop;
@@ -11,19 +11,21 @@ class Libp2p::Stream v0.2.0 {
     use Scalar::Util qw[weaken refaddr];
     #
     field $handle : param : reader;
-    field $handle_id = refaddr $handle;
+    field $stream_id;
     field $loop     : param  : reader;
     field $peer_id  : param  : writer : reader //= undef;
     field $protocol : reader : writer = undef;
     field @on_close_callbacks;
+    field $is_upgraded : writer = 0;
 
-    # Static shared state mapping handle refaddr to state
+    # Static shared state mapping stream ID to state
     my %STREAM_STATE;
-    my %ALL_STREAMS;    # handle_id -> weak_stream_obj
+    my %ALL_STREAMS;    # stream_id -> weak_stream_obj
     ADJUST {
-        $STREAM_STATE{$handle_id} = { read_buffer => '', pending_reads => [] };
+        $stream_id = refaddr $self;
+        $STREAM_STATE{$stream_id} = { read_buffer => '', pending_reads => [] };
         weaken( my $weak_self = $self );
-        $ALL_STREAMS{$handle_id} = $weak_self;
+        $ALL_STREAMS{$stream_id} = $weak_self;
         $loop->add_read_handler(
             $handle,
             sub ($h) {
@@ -38,11 +40,15 @@ class Libp2p::Stream v0.2.0 {
         }
         values %ALL_STREAMS;
     }
-    method _state () { $STREAM_STATE{$handle_id} }
+    method _state () { $STREAM_STATE{$stream_id} }
+
+    method syswrite ($data) {
+        return builtin::blessed($handle) ? $handle->syswrite($data) : syswrite $handle, $data;
+    }
 
     method write ($data) {
         my $f    = Libp2p::Future->new;
-        my $sent = blessed($handle) ? $handle->syswrite($data) : syswrite $handle, $data;
+        my $sent = $self->syswrite($data);
         if ( defined $sent ) {
             $loop->poll(0);
             $f->done($sent);
@@ -98,13 +104,11 @@ class Libp2p::Stream v0.2.0 {
 
     method _on_read_ready () {
         my $buf  = '';
-        my $read = blessed($handle) ? $handle->sysread( $buf, 65536 ) : sysread( $handle, $buf, 65536 );
+        my $read = builtin::blessed($handle) ? $handle->sysread( $buf, 65536 ) : sysread( $handle, $buf, 65536 );
         if ( defined $read && $read > 0 ) {
             my $state = $self->_state;
             return unless $state;
             $state->{read_buffer} .= $buf;
-
-      #~ warnings::warnif  sprintf '[Stream] handle %s READ %d bytes, buffer_len now %d', ( $handle // 'undef' ), $read, length $state->{read_buffer};
             $self->_process_pending_reads();
         }
         elsif ( defined $read && $read == 0 ) {
@@ -136,8 +140,6 @@ class Libp2p::Stream v0.2.0 {
                     substr $state->{read_buffer}, 0, $vlen, '';
                     my $msg = substr $state->{read_buffer}, 0, $len, '';
                     $msg =~ s/\n$//;
-
-                    #~ warnings::warnif sprintf '[Stream] handle %s DONE msg=[%s]', ( $handle // 'undef' ), $msg;
                     $pr->{future}->done($msg);
                 }
                 else {
@@ -201,25 +203,23 @@ class Libp2p::Stream v0.2.0 {
     }
 
     method close () {
-        if ($handle) {
+        if ( $handle && !$is_upgraded ) {
             $loop->remove_read_handler($handle);
             close($handle);
         }
-        delete $STREAM_STATE{$handle_id};
-        delete $ALL_STREAMS{$handle_id};
+        delete $STREAM_STATE{$stream_id};
+        delete $ALL_STREAMS{$stream_id};
         my @cbs = @on_close_callbacks;
         @on_close_callbacks = ();
         $_->() for @cbs;
     }
 
     method DESTROY () {
-
-        #~ warnings::warnif '[Stream] DESTROY handle ' . ( $handle // 'undef' );
-        if ( $loop && $handle ) {
+        if ( !$is_upgraded && $loop && $handle ) {
             try { $loop->remove_read_handler($handle); } catch ($e) {
             }
         }
-        delete $STREAM_STATE{$handle_id};
-        delete $ALL_STREAMS{$handle_id};
+        delete $STREAM_STATE{$stream_id};
+        delete $ALL_STREAMS{$stream_id};
     }
 } 1;
